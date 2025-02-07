@@ -1,0 +1,13 @@
+{
+    "base_url": "https://example.com/api",
+    "endpoints": [
+        {
+            "path": "/health",
+            "expected_status": 200
+        },
+        {
+            "path": "/users",
+            "expected_status": 200
+        }
+    ]
+}

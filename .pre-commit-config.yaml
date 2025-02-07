@@ -1,0 +1,28 @@
+---
+# Aeternum API pre-commit configuration
+
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      - id: validate-toml
+
+  - repo: https://github.com/codespell-project/codespell.git
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        args: [-w]
+        files: ^.*\.(md|go|jinja|yaml|yml|sh)$

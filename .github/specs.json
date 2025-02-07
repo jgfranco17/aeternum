@@ -1,0 +1,14 @@
+{
+  "author": "Chino Franco",
+  "version": "0.0.1",
+  "repo": {
+    "host": "github",
+    "url": "http://github.com/jgfranco17/aeternum-ci"
+  },
+  "project": {
+    "name": "Aeternum CI",
+    "description": "REST API server for CI operations",
+    "languages": ["Go"],
+    "frameworks": ["gin-gonic"]
+  }
+}

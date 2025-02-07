@@ -1,0 +1,80 @@
+name: Production Release
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Golang
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21.4"
+
+      - name: Install Just
+        uses: extractions/setup-just@v2
+
+      - name: Install Go modules
+        run: |
+          just tidy
+
+      - name: Run tests
+        run: |
+          just test
+
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Golang
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21.4"
+
+      - name: Install CI pre-requisites
+        run: |
+          sudo apt install jq
+          sudo apt-get install gh
+
+      - name: Get project version
+        run: |
+          VERSION=$(jq -r .version ./.github/specs.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.USER_GITHUB_NAME }}
+          password: ${{ secrets.USER_GITHUB_TOKEN }}
+
+      - name: Publish image
+        run: |
+          IMAGE=${{ env.DOCKER_REGISTRY }}/${{ secrets.USER_GITHUB_NAME }}/aeternum-ci:${{ env.VERSION }}
+          docker build -t $IMAGE -f ./docker/server.Dockerfile .
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Publish image
+        shell: bash
+        run: |
+          echo "## Created Docker image: v${{ env.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To pull the image locally, run the following:" >> $GITHUB_STEP_SUMMARY
+          echo '```shell' >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.IMAGE }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
