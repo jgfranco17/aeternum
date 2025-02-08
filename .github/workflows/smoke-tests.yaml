@@ -1,0 +1,39 @@
+name: Smoke Tests
+
+on:
+  workflow_dispatch: # Allows manual trigger
+  schedule:
+    - cron: "0 */2 * * *" # Runs every 2 hours
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install HTTP Client (if needed)
+        run: sudo apt-get install -y curl jq
+
+      - name: Run Smoke Tests
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        run: |
+          # Define endpoints and expected status codes
+          endpoints=(
+            "/healthz 200"
+            "/service-info 201"
+          )
+
+          for entry in "${endpoints[@]}"; do
+            read -r endpoint expected_code <<< "$entry"
+            response_code=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE_URL$endpoint")
+
+            if [ "$response_code" -eq "$expected_code" ]; then
+              echo "✅ $endpoint - Expected: $expected_code, Got: $response_code"
+            else
+              echo "❌ $endpoint - Expected: $expected_code, Got: $response_code"
+              exit 1
+            fi
+          done

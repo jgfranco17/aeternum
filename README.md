@@ -22,18 +22,21 @@ this makes it lightweight, fast, and easy to deploy.
 ### Why Aeternum API?
 
 ✅ **Prevent Downtime**: Know immediately if your API behaves unexpectedly.
+
 ✅ **No Database Required**: Keep things simple and efficient.
+
 ✅ **Fast & Lightweight**: Built with Go for high performance.
+
 ✅ **Automated Checks**: Define expected responses, and let Aeternum API do the rest.
+
 ✅ **B2C-Friendly**: Designed for developers, testers, and startups looking for a simple
     way to ensure API reliability.
 
 ## How It Works
 
-Define a base URL for the API you want to test.
-Specify endpoints with expected HTTP response codes.
-Run Aeternum API to continuously verify your API's health.
-Get logs and alerts when an endpoint fails.
+1. Define a base URL for the API you want to test.
+2. Specify endpoints with expected HTTP response codes.
+3. Run Aeternum API to continuously verify your API's health.
 
 ## Roadmap
 
