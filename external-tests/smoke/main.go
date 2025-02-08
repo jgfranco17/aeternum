@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	API_TIMEOUT       int = 5
+	API_TIMEOUT       int = 60
 	MAX_RETRIES_COUNT int = 3
 )
 
