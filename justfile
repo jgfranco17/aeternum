@@ -48,3 +48,8 @@ test-sample-request:
     curl -vX POST "$LOCAL_URL" \
         --header "Content-Type: application/json" \
         -d @sample/basic_request.json
+
+# Run the docs server
+docs:
+    mkdocs build
+    mkdocs serve
