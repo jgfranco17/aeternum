@@ -18,12 +18,6 @@ test:
     go clean -testcache
     go test -cover ./api/...
 
-# Build Docker image
-build tag="latest": test
-	@echo "Building Docker image (tag={{ tag }})..."
-	docker build -t {{ PROJECT_NAME }}:{{ tag }} .
-	@echo "Docker image built successfully!"
-
 # Sync Go modules
 tidy:
     cd api && go mod tidy
@@ -35,7 +29,7 @@ compose-up:
 
 # Stop all Compose containers and delete images created
 compose-down:
-    docker compose -f compose.yaml up down
+    docker compose -f compose.yaml down
     docker rmi $(docker images | grep "{{ PROJECT_NAME }}" | awk "{print \$3}")
 
 # Run a sample execution
@@ -49,7 +43,16 @@ test-sample-request:
         --header "Content-Type: application/json" \
         -d @sample/basic_request.json
 
-# Run the docs server
+# Run the docs server locally
 docs:
     mkdocs build
     mkdocs serve
+
+# Build Docker image for the docs site
+build-docs-image tag="latest":
+    #!/usr/bin/env bash
+    docker build \
+        --no-cache \
+        -f docs/Dockerfile \
+        -t {{ PROJECT_NAME }}-docs:{{ tag }} .
+    echo "Docs image built successfully!"
