@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -21,10 +22,15 @@ func (s *SmokeTestRunner) RunSmokeTests(targetEndpoints map[string]int) error {
 	failedEndpoints := make([]string, len(targetEndpoints))
 
 	for path, expectedCode := range targetEndpoints {
-		url := s.BaseURL + path
-		resp, err := s.client.Get(url)
+		requestedUrl, err := url.JoinPath(s.BaseURL, path)
 		if err != nil {
-			fmt.Printf("❌ ERROR: Failed to reach %s - %v\n", url, err)
+			fmt.Printf("❌ ERROR: Failed to get request URL (base=%s, endpoint=%s) - %v\n", s.BaseURL, path, err)
+			failedEndpoints = append(failedEndpoints, path)
+			continue
+		}
+		resp, err := s.client.Get(requestedUrl)
+		if err != nil {
+			fmt.Printf("❌ ERROR: Failed to reach %s - %v\n", requestedUrl, err)
 			failedEndpoints = append(failedEndpoints, path)
 			continue
 		}

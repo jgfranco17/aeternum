@@ -17,25 +17,26 @@ func HomeHandler(c *gin.Context) {
 	})
 }
 
-func ServiceInfoHandler(startTime time.Time) func(c *gin.Context) {
+func ServiceInfoHandler(codebaseSpec *ProjectCodebase, startTime time.Time) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		timeSinceStart := time.Since(startTime)
+		uptimeSeconds := fmt.Sprintf("%ds", int(timeSinceStart.Seconds()))
 		c.JSON(http.StatusOK, ServiceInfo{
 			Name:        "Aeternum API",
-			Author:      "Joaquin Gabriel Franco",
-			Repository:  "https://github.com/jgfranco17/aeternum-api",
+			Codebase:    *codebaseSpec,
 			Environment: environment.GetApplicationEnv(),
-			Uptime:      time.Since(startTime),
-			License:     "MIT",
-			Languages:   []string{"Go"},
+			Uptime:      uptimeSeconds,
 		})
 	}
 }
 
-func HealthCheckHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, HealthStatus{
-		Timestamp: time.Now().Format(time.RFC822),
-		Status:    "healthy",
-	})
+func HealthCheckHandler() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		c.JSON(http.StatusOK, HealthStatus{
+			Timestamp: time.Now().Format(time.RFC822),
+			Status:    "healthy",
+		})
+	}
 }
 
 func NotFoundHandler(c *gin.Context) {

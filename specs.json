@@ -1,0 +1,8 @@
+{
+    "author": "Joaquin Gabriel Franco",
+    "version": "0.0.1",
+    "repository": "https://github.com/jgfranco17/aeternum-api",
+    "license": "BSD-3-Clause",
+    "languages": ["Go"],
+    "active": true
+}
