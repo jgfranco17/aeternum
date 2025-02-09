@@ -1,16 +1,19 @@
 name: Smoke Tests
 
 on:
-  workflow_dispatch: # Manual trigger
+  workflow_dispatch:
   schedule:
     - cron: "0 */2 * * *" # Every 2 hours
+
+env:
+  API_BASE_URL: https://aeternum-api.onrender.com
 
 jobs:
   smoke-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Go
@@ -18,8 +21,8 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Build Smoke Test Runner
+      - name: Run smoke tests
         env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_BASE_URL: ${{ env.API_BASE_URL }}
         run: |
           go run external-tests/smoke/main.go
