@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
-	"api/pkg/core"
+	core_errors "api/pkg/core/errors"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,13 +12,13 @@ import (
 // Decode a url param formatted in base64.
 func decodeBase64Param(ctx context.Context, base64Param string) (string, error) {
 	if base64Param == "" {
-		return "", core.NewInputError(ctx, "the base 64 param cannot be empty")
+		return "", core_errors.NewInputError(ctx, "the base 64 param cannot be empty")
 	}
 	value, err := base64.RawURLEncoding.DecodeString(base64Param)
 	if err != nil {
 		value, err = base64.StdEncoding.DecodeString(base64Param)
 		if err != nil {
-			return "", core.NewInputError(ctx, "Cannot decode the param with base64. Original value: %s. Error: %w", base64Param, err)
+			return "", core_errors.NewInputError(ctx, "Cannot decode the param with base64. Original value: %s. Error: %w", base64Param, err)
 		}
 
 	}

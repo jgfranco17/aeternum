@@ -1,10 +1,13 @@
-package core
+package configs
 
 import (
 	"context"
 	"fmt"
 	"os"
 	"path"
+
+	env "api/pkg/core/environment"
+	logger "api/pkg/core/obs"
 
 	"gopkg.in/yaml.v3"
 )
@@ -38,7 +41,7 @@ func (c *EnvironmentConfig) LogLevel() string {
 }
 
 func loadFromFile(configPath string, config *EnvironmentConfig) error {
-	log := FromContext(context.Background())
+	log := logger.GetLoggerFromContext(context.Background())
 	log.Infof("Loading configuration from %s", configPath)
 	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
@@ -55,9 +58,9 @@ func loadFromFile(configPath string, config *EnvironmentConfig) error {
 }
 
 func loadSecrets(config *EnvironmentConfig) error {
-	log := FromContext(context.Background())
+	log := logger.GetLoggerFromContext(context.Background())
 	log.Infof("Loading secrets from env")
-	githubToken := GetEnvWithDefault(EnvVarGithubToken, "")
+	githubToken := env.GetEnvWithDefault(EnvVarGithubToken, "")
 	if githubToken == "" {
 		return fmt.Errorf("Github token was not set")
 	}
@@ -68,7 +71,7 @@ func loadSecrets(config *EnvironmentConfig) error {
 
 // Load the application configuration
 func LoadConfig(configDir string) (*EnvironmentConfig, error) {
-	log := FromContext(context.Background())
+	log := logger.GetLoggerFromContext(context.Background())
 	config := EnvironmentConfig{}
 	configFile := path.Join(configDir, ConfigFileName)
 	log.Infof("Loading configuration from %s", configFile)

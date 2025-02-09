@@ -1,7 +1,7 @@
 package headers
 
 import (
-	"api/pkg/core"
+	core_errors "api/pkg/core/errors"
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
@@ -19,12 +19,12 @@ func CreateOriginInfoHeader(c *gin.Context) (OriginInfo, error) {
 	json_header := OriginInfo{}
 
 	if len(header) == 0 {
-		return json_header, core.NewInputError(c, "X-Origin-Info header not found.")
+		return json_header, core_errors.NewInputError(c, "X-Origin-Info header not found.")
 	}
 
 	err := json.Unmarshal([]byte(header[0]), &json_header)
 	if err != nil {
-		return json_header, core.NewInputError(c, "Header schema validation: %s", err.Error())
+		return json_header, core_errors.NewInputError(c, "Header schema validation: %s", err.Error())
 	}
 	return json_header, nil
 }

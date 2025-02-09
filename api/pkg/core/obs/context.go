@@ -1,4 +1,4 @@
-package core
+package obs
 
 // List of keys needed by the core functionality
 const (

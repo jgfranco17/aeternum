@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"api/pkg/core"
+	env "api/pkg/core/environment"
+	"api/pkg/core/obs"
 	"api/pkg/router/headers"
 	system "api/pkg/router/system"
 	v0 "api/pkg/router/v0"
@@ -29,21 +30,21 @@ func (s *Service) Run() error {
 // Add the fields we want to expose in the logger to the request context
 func addLoggerFields() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !core.IsLocalEnvironment() {
+		if !env.IsLocalEnvironment() {
 			requestID := uuid.NewString()
-			environment := os.Getenv(core.ENV_KEY_ENVIRONMENT)
-			version := os.Getenv(core.ENV_KEY_VERSION)
+			environment := os.Getenv(env.ENV_KEY_ENVIRONMENT)
+			version := os.Getenv(env.ENV_KEY_VERSION)
 
 			// Golang recommends contexts to use custom types instead
 			// of strings, but gin defines key as a string.
-			c.Set(string(core.RequestId), requestID)
-			c.Set(string(core.Environment), environment)
-			c.Set(string(core.Version), version)
+			c.Set(string(obs.RequestId), requestID)
+			c.Set(string(obs.Environment), environment)
+			c.Set(string(obs.Version), version)
 
 			originInfo, err := headers.CreateOriginInfoHeader(c)
 
 			if err == nil && originInfo.Origin != "" {
-				c.Set(string(core.Origin), fmt.Sprintf("%s@%s", originInfo.Origin, originInfo.Version))
+				c.Set(string(obs.Origin), fmt.Sprintf("%s@%s", originInfo.Origin, originInfo.Version))
 			}
 		}
 		c.Next()
@@ -53,7 +54,7 @@ func addLoggerFields() gin.HandlerFunc {
 // Log the start and completion of a request
 func logRequest() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log := core.FromContext(c)
+		log := obs.GetLoggerFromContext(c)
 
 		origin := c.Request.Header.Get("Origin")
 		log.Infof("Request Started: [%s] %s from %s", c.Request.Method, c.Request.URL, origin)

@@ -14,8 +14,9 @@ func init() {
 }
 
 func SetSystemRoutes(route *gin.Engine) {
+	startTime = time.Now()
 	route.GET("/", HomeHandler)
-	route.GET("/service-info", ServiceInfoHandler)
+	route.GET("/service-info", ServiceInfoHandler(startTime))
 	route.GET("/healthz", HealthCheckHandler)
 	route.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	route.NoRoute(NotFoundHandler)

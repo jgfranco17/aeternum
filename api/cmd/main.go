@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"api/pkg/core"
+	env "api/pkg/core/environment"
 	"api/pkg/router"
 	"api/pkg/router/system"
 
@@ -20,7 +20,7 @@ var (
 func init() {
 	logrus.SetReportCaller(true)
 
-	if core.IsLocalEnvironment() {
+	if env.IsLocalEnvironment() {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 		gin.SetMode(gin.DebugMode)
 	} else {

@@ -1,4 +1,4 @@
-package core
+package execution
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	logger "api/pkg/core/obs"
 
 	"github.com/google/uuid"
 )
@@ -47,7 +49,7 @@ type CheckResponse struct {
 }
 
 func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*CheckResponse, error) {
-	log := FromContext(ctx)
+	log := logger.GetLoggerFromContext(ctx)
 	requestID := fmt.Sprintf("aeternum-v0-%s", uuid.New().String())
 	log.Debugf("Running test requests [ID %s]: %s", requestID, testRequest.BaseURL)
 	for _, testRequest := range testRequest.Endpoints {

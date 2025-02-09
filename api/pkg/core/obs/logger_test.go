@@ -1,4 +1,4 @@
-package core
+package obs
 
 import (
 	"bytes"
@@ -35,7 +35,7 @@ func TestLoggerCanBeCreated(t *testing.T) {
 
 	for _, example := range examples {
 		t.Run(example.description, func(t *testing.T) {
-			logger := FromContext(example.context)
+			logger := GetLoggerFromContext(example.context)
 			assert.NotNilf(t, logger, "the logger could not be created.")
 
 			logger.Logger.SetLevel(logrus.DebugLevel)

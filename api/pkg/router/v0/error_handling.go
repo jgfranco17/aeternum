@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"api/pkg/core"
+	core_errors "api/pkg/core/errors"
+	"api/pkg/core/obs"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,8 +30,8 @@ func getContextField(ctx context.Context, fieldName string) string {
 }
 
 func getErrorMetadataFromContext(ctx context.Context) errorBody {
-	requestId := getContextField(ctx, core.RequestId)
-	serviceVersion := getContextField(ctx, core.Version)
+	requestId := getContextField(ctx, obs.RequestId)
+	serviceVersion := getContextField(ctx, obs.Version)
 
 	return errorBody{
 		RequestID:      requestId,
@@ -44,7 +45,7 @@ func getErrorResponse(ctx context.Context, err error) errorResponse {
 
 	errorMessage := err.Error()
 
-	var inputErr core.InputError
+	var inputErr core_errors.InputError
 	if errors.As(err, &inputErr) {
 		body := getErrorMetadataFromContext(inputErr.Context())
 		body.Message = errorMessage
@@ -58,7 +59,7 @@ func getErrorResponse(ctx context.Context, err error) errorResponse {
 
 // Generic error handling
 func handleError(c *gin.Context, err error) {
-	log := core.FromContext(c)
+	log := obs.GetLoggerFromContext(c)
 	log.Error(err)
 	errorResponse := getErrorResponse(c, err)
 	c.JSON(errorResponse.Status, errorResponse.Body)
