@@ -3,7 +3,7 @@ name: Smoke Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */2 * * *" # Every 2 hours
+    - cron: "0 * * * *" # Every hour
 
 env:
   API_BASE_URL: https://aeternum-api.onrender.com
