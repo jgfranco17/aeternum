@@ -2,7 +2,7 @@ PROJECT_NAME := "aeternum"
 
 # Default command
 default:
-    @just --list
+    @just --list --unsorted
 
 # Run debug server
 run-local port="8080":
@@ -21,7 +21,7 @@ test:
 # Build Docker image
 build tag="latest": test
 	@echo "Building Docker image (tag={{ tag }})..."
-	docker build -t {{ PROJECT_NAME }}:{{ tag }} -f ./docker/server.Dockerfile .
+	docker build -t {{ PROJECT_NAME }}:{{ tag }} .
 	@echo "Docker image built successfully!"
 
 # Sync Go modules
