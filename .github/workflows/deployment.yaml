@@ -47,6 +47,6 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: |
-            curl -s ${{ secrets.RENDER_DEPLOY_HOOK }} \
+          curl -s ${{ secrets.RENDER_DEPLOY_HOOK }} \
             -X POST \
             -H "Authorization: Bearer $RENDER_API_KEY"

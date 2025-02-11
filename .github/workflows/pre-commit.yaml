@@ -22,7 +22,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install pre-commit
-        run: pip install pre-commit
+        run: |
+          pip install pre-commit
 
       - name: Run pre-commit
-        run: pre-commit run --all-files --verbose
+        run: |
+          pre-commit run --all-files --verbose

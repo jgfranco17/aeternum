@@ -19,31 +19,10 @@ without manual monitoring.
 Built using Golang, Aeternum API runs without requiring a database or external services;
 this makes it lightweight, fast, and easy to deploy.
 
-### Why Aeternum API?
+## Documentation
 
-✅ **Prevent Downtime**: Know immediately if your API behaves unexpectedly.
-
-✅ **No Database Required**: Keep things simple and efficient.
-
-✅ **Fast & Lightweight**: Built with Go for high performance.
-
-✅ **Automated Checks**: Define expected responses, and let Aeternum API do the rest.
-
-✅ **B2C-Friendly**: Designed for developers, testers, and startups looking for a simple
-    way to ensure API reliability.
-
-## How It Works
-
-1. Define a base URL for the API you want to test.
-2. Specify endpoints with expected HTTP response codes.
-3. Run Aeternum API to continuously verify your API's health.
-
-## Roadmap
-
-[ ] CLI Enhancements
-[ ] Web Dashboard for Test Reports
-[ ] Notifications (Slack, Email, etc.)
-[ ] Performance Metrics
+Check out the [documentation page](https://jgfranco17.github.io/aeternum-api/) for more
+information about using the API.
 
 ## License
 
