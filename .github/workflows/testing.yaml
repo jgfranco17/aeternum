@@ -12,20 +12,20 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: "1.22"
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
 
-    - name: Install dependencies
-      run: |
-        cd api && go mod tidy
-        go work sync
+      - name: Install dependencies
+        run: |
+          cd api && go mod tidy
+          go work sync
 
-    - name: Run tests
-      run: |
-        go clean -testcache
-        go test -cover ./api/...
+      - name: Run tests
+        run: |
+          go clean -testcache
+          go test -cover ./api/...

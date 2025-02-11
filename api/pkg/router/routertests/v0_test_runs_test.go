@@ -5,18 +5,30 @@ import (
 	"testing"
 )
 
-func TestCheckNotFoundEndpoint(t *testing.T) {
+func TestRunTestExecutionRequestSuccess(t *testing.T) {
 	// Setup the router
 	testService := NewTestServer(8800).WithSystemRoutes()
 
 	// Define the test request (for the POST /check endpoint)
-	testRequest := ExampleHttpRequest{
-		Method:       "GET",
-		Endpoint:     "/missing",
-		ExpectedCode: http.StatusNotFound,
-		Payload: map[string]interface{}{
-			"message": `Endpoint '/missing' does not exist`,
+	testRequest := []ExampleHttpRequest{
+		{
+			Method:       "POST",
+			Endpoint:     "/v0/tests/run",
+			ExpectedCode: http.StatusNotFound,
+			Payload: `{
+				"base_url": "https://example.com/api",
+				"endpoints": [
+					{
+						"path":            "/health",
+						"expected_status": 200,
+					},
+					{
+						"path":            "/users",
+						"expected_status": 200,
+					}
+				]
+			}`,
 		},
 	}
-	testService.RunTestRequest(t, testRequest)
+	testService.RunTestRequests(t, testRequest)
 }

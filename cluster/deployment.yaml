@@ -15,8 +15,8 @@ spec:
         app: aeternum-backend
     spec:
       containers:
-      - name: aeternum-backend
-        image: aeternum-api:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8000
+        - name: aeternum-backend
+          image: aeternum-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000

@@ -19,7 +19,7 @@ type ExampleHttpRequest struct {
 	Method         string
 	Endpoint       string
 	ExpectedCode   int
-	Payload        interface{}
+	Payload        string
 	ExpectedFields map[string]interface{}
 }
 
@@ -28,12 +28,12 @@ func NewBasicExampleRequest(method string, endpoint string, statusCode int) Exam
 		Method:         method,
 		Endpoint:       endpoint,
 		ExpectedCode:   statusCode,
-		Payload:        nil,
+		Payload:        "",
 		ExpectedFields: make(map[string]interface{}),
 	}
 }
 
-func (e *ExampleHttpRequest) WithPayload(payload interface{}) ExampleHttpRequest {
+func (e *ExampleHttpRequest) WithPayload(payload string) ExampleHttpRequest {
 	e.Payload = payload
 	return *e
 }
@@ -67,27 +67,28 @@ func (s *TestServer) WithV0Routes() *TestServer {
 	return s
 }
 
-func (s *TestServer) RunTestRequest(t *testing.T, sampleRequest ExampleHttpRequest) {
+func (s *TestServer) RunTestRequests(t *testing.T, sampleRequests []ExampleHttpRequest) {
 	t.Helper()
 
-	// Create the request with the provided method, endpoint, and body (if any)
-	var reqBody *http.Request
-	if sampleRequest.Payload != nil {
-		bodyBytes, _ := json.Marshal(sampleRequest.Payload)
-		reqBody = httptest.NewRequest(sampleRequest.Method, sampleRequest.Endpoint, bytes.NewBuffer(bodyBytes))
-	} else {
-		reqBody = httptest.NewRequest(sampleRequest.Method, sampleRequest.Endpoint, nil)
-	}
-	recorder := httptest.NewRecorder()
-	s.service.Router.ServeHTTP(recorder, reqBody)
-	assert.Equal(t, sampleRequest.ExpectedCode, recorder.Code, "Expected status code to match")
+	for _, r := range sampleRequests {
+		// Create the request with the provided method, endpoint, and body (if any)
+		var reqBody *http.Request
+		if r.Payload != "" {
+			reqBody = httptest.NewRequest(r.Method, r.Endpoint, bytes.NewBuffer([]byte(r.Payload)))
+		} else {
+			reqBody = httptest.NewRequest(r.Method, r.Endpoint, nil)
+		}
+		recorder := httptest.NewRecorder()
+		s.service.Router.ServeHTTP(recorder, reqBody)
+		assert.Equal(t, r.ExpectedCode, recorder.Code, "Expected status code to match")
 
-	// Check if the response body matches the expected fields
-	var responseBody map[string]interface{}
-	err := json.Unmarshal(recorder.Body.Bytes(), &responseBody)
-	assert.NoErrorf(t, err, "Failed to unmarshal JSON response body")
-	for key, value := range sampleRequest.ExpectedFields {
-		assert.Contains(t, responseBody, key, "Response is missing key: %s", key)
-		assert.Equal(t, value, responseBody[key], "Expected value for key '%s'", key)
+		// Check if the response body matches the expected fields
+		var responseBody map[string]interface{}
+		err := json.Unmarshal(recorder.Body.Bytes(), &responseBody)
+		assert.NoErrorf(t, err, "Failed to unmarshal JSON response body")
+		for key, value := range r.ExpectedFields {
+			assert.Contains(t, responseBody, key, "Response is missing key: %s", key)
+			assert.Equal(t, value, responseBody[key], "Expected value for key '%s'", key)
+		}
 	}
 }

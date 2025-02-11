@@ -24,7 +24,7 @@ this makes it lightweight, fast, and easy to deploy.
 ✅ **Automated Checks**: Define expected responses, and let Aeternum API do the rest.
 
 ✅ **B2C-Friendly**: Designed for developers, testers, and startups looking for a simple
-    way to ensure API reliability.
+way to ensure API reliability.
 
 ### How It Works
 

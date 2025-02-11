@@ -1,49 +1,64 @@
 # Using the API
 
-## 📝 Submit a Test Request
+## Submit a Test Request
 
 ```http
-GET /results/{request_id}
+POST /v0/tests/run
 ```
 
-Creates a test execution request. The request runs asynchronously, and you can
-fetch results later using the `request_id`.
+Run a test againbst a target URL. Aeternum will validate the endpoint and respond
+with a success message or an error.
 
-```bash
-curl -X POST https://aeternum-api.onrender.com/tests/run -d '{
-  "base_url": "https://target-api.com",
-  "endpoints": [
-    { "path": "/status", "expected_code": 200 },
-    { "path": "/data", "expected_code": 404 }
-  ]
-}' -H "Content-Type: application/json"
-```
+=== "Bash"
+    ```bash
+    curl -X POST https://aeternum-api.onrender.com/v0/tests/run -d '{
+      "base_url": "https://target-api.com",
+      "endpoints": [
+        { "path": "/status", "expected_code": 200 },
+        { "path": "/data", "expected_code": 404 }
+      ]
+    }' -H "Content-Type: application/json"
+    ```
 
-Alternatively, you can define your request body in a separate JSON file.
+=== "Python 3"
+    ```python
+    import requests
+    url = "https://aeternum-api.onrender.com/v0/tests/run"
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "base_url": "https://target-api.com",
+        "endpoints": [
+            {"path": "/status", "expected_code": 200},
+            {"path": "/data", "expected_code": 404}
+        ]
+    }
+    response = requests.post(url, json=data, headers=headers)
+    print(response.status_code)
+    print(response.json())
+    ```
 
-```json title="request.json"
-{
-    "base_url": "https://example.com/api",
-    "endpoints": [
-        {
-            "path": "/health",
-            "expected_status": 200
+=== "Javascript"
+    ```javascript
+    const fetch = require("node-fetch");
+    const url = "https://aeternum-api.onrender.com/v0/tests/run";
+    const data = {
+        base_url: "https://target-api.com",
+        endpoints: [
+            { path: "/status", expected_code: 200 },
+            { path: "/data", expected_code: 404 }
+        ]
+    };
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
         },
-        {
-            "path": "/users",
-            "expected_status": 200
-        }
-    ]
-}
-```
-
-You can then call the `curl` command with the following:
-
-```bash
-curl -X POST https://aeternum-api.onrender.com/tests/run \
-    -d "@request.json" \
-    -H "Content-Type: application/json"
-```
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error("Error:", error));
+    ```
 
 ## Limitations
 

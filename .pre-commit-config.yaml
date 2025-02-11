@@ -19,6 +19,13 @@ repos:
     hooks:
       - id: go-fmt
 
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.5.1
+    # Otherwise will fail on commit-msg hook
+    hooks:
+      - id: prettier
+        files: ^.*\.(go|json|yaml|yml)$
+
   - repo: https://github.com/codespell-project/codespell.git
     rev: v2.2.6
     hooks:

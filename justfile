@@ -58,5 +58,5 @@ test-sample-request:
 
 # Run the docs server locally
 docs:
-    mkdocs build
-    mkdocs serve
+    mkdocs build --strict --clean
+    mkdocs serve --open
