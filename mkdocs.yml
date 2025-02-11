@@ -11,15 +11,16 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Toggle light mode
-      primary: lime
-      accent: lime
+      primary: green
+      accent: green
     # Light Mode
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       toggle:
         icon: material/weather-night
         name: Toggle dark mode
-      primary: green
-      accent: green
+      primary: lime
+      accent: lime
   nav:
     - Home: index.md
     - Roadmap: roadmap.md
