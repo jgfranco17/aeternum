@@ -1,8 +1,16 @@
-# About Aeternum
-
-_Ensuring your APIs stand the test of time._
+# Home
 
 ## Introduction
+
+APIs power the digital world, but ensuring their reliability can be complex. Aeternum
+API simplifies this by offering a seamless, automated way to validate your endpoints
+with just a single request. Define your target API, specify expected responses, and let
+Aeternum handle the rest—providing real-time insights into uptime, response consistency,
+and failures.
+
+Whether you're a developer, tester, or DevOps engineer, Aeternum API helps you catch
+issues before they impact users. Start testing today and make unreliable APIs a thing
+of the past!
 
 ### What is Aeternum?
 
@@ -31,14 +39,6 @@ way to ensure API reliability.
 1. Define a base URL for the API you want to test.
 2. Specify endpoints with expected HTTP response codes.
 3. Run Aeternum API to continuously verify your API's health.
-
-## Roadmap
-
-[ ] Database for historical test reports
-
-[ ] Notifications (Slack, Email, etc.)
-
-[ ] Performance metrics
 
 ## License
 
