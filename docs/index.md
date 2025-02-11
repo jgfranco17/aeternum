@@ -8,8 +8,7 @@ _Ensuring your APIs stand the test of time._
 
 Aeternum API is a lightweight SaaS tool designed to continuously test API availability
 and correctness. With a simple configuration, users can define their API endpoints,
-expected HTTP status codes, and response times, ensuring their services remain operational
-without manual monitoring.
+expected HTTP status codes, and response times.
 
 Built using Golang, Aeternum API runs without requiring a database or external services;
 this makes it lightweight, fast, and easy to deploy.
@@ -35,10 +34,11 @@ this makes it lightweight, fast, and easy to deploy.
 
 ## Roadmap
 
-[ ] CLI Enhancements
-[ ] Web Dashboard for Test Reports
+[ ] Database for historical test reports
+
 [ ] Notifications (Slack, Email, etc.)
-[ ] Performance Metrics
+
+[ ] Performance metrics
 
 ## License
 
