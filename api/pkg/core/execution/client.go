@@ -66,7 +66,8 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 		timeout = 5
 	}
 	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
-	failedRequests := []string{}
+	requestErrors := []string{}
+	failedTests := []string{}
 	for i, endpoint := range testRequest.Endpoints {
 		wg.Add(1)
 		go func(i int, e Endpoint) {
@@ -76,7 +77,8 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 			actualStatus := 0
 
 			if err != nil {
-				failedRequests = append(failedRequests, e.Path)
+				requestErrors = append(requestErrors, err.Error())
+				return
 			}
 			actualStatus = resp.StatusCode
 			resp.Body.Close()
@@ -84,7 +86,7 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 			if actualStatus == e.ExpectedStatus {
 				status = "PASS"
 			} else {
-				failedRequests = append(failedRequests, e.Path)
+				failedTests = append(failedTests, e.Path)
 			}
 
 			results[i] = CheckResult{
@@ -95,10 +97,14 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 			}
 		}(i, endpoint)
 	}
-
 	wg.Wait()
+
+	// Handle error cases
+	if len(requestErrors) > 0 {
+		return nil, fmt.Errorf("Failed to make %d requests: %v", len(requestErrors), requestErrors)
+	}
 	var overallStatus string
-	if len(failedRequests) > 0 {
+	if len(failedTests) > 0 {
 		overallStatus = StatusFail
 	} else {
 		overallStatus = StatusPass

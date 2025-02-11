@@ -16,15 +16,15 @@ type OriginInfo struct {
 func CreateOriginInfoHeader(c *gin.Context) (OriginInfo, error) {
 	header := c.Request.Header["X-Origin-Info"]
 
-	json_header := OriginInfo{}
+	jsonHeader := OriginInfo{}
 
 	if len(header) == 0 {
-		return json_header, core_errors.NewInputError(c, "X-Origin-Info header not found.")
+		return jsonHeader, core_errors.NewInputError(c, "X-Origin-Info header not found.")
 	}
 
-	err := json.Unmarshal([]byte(header[0]), &json_header)
+	err := json.Unmarshal([]byte(header[0]), &jsonHeader)
 	if err != nil {
-		return json_header, core_errors.NewInputError(c, "Header schema validation: %s", err.Error())
+		return jsonHeader, core_errors.NewInputError(c, "Header schema validation: %s", err.Error())
 	}
-	return json_header, nil
+	return jsonHeader, nil
 }
