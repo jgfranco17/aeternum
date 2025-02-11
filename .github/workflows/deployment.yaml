@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - "main"
+    paths:
+      - "**.go"
+      - "specs.json"
+      - "Dockerfile"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -31,6 +38,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
     environment: production
     needs: build
 
