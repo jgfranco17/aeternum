@@ -46,6 +46,6 @@ func GetCodebaseSpecFromFile(filePath string) (*ProjectCodebase, error) {
 }
 
 type BasicErrorInfo struct {
-	StatusCode int
-	Message    string
+	StatusCode int    `json:"statusCode"`
+	Message    string `json:"message"`
 }

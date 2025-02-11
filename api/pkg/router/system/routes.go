@@ -16,17 +16,19 @@ func init() {
 	startTime = time.Now()
 }
 
-func SetSystemRoutes(route *gin.Engine) {
+func SetSystemRoutes(route *gin.Engine, includeSystemInfo bool) {
 	log := obs.GetLoggerFromContext(context.Background())
 	startTime = time.Now()
-	specs, err := GetCodebaseSpecFromFile("specs.json")
-	if err != nil {
-		log.Fatal(err)
+	if includeSystemInfo {
+		specs, err := GetCodebaseSpecFromFile("specs.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+		route.GET("/service-info", ServiceInfoHandler(specs, startTime))
 	}
 	for _, homeRoute := range []string{"", "/home"} {
 		route.GET(homeRoute, HomeHandler)
 	}
-	route.GET("/service-info", ServiceInfoHandler(specs, startTime))
 	route.GET("/healthz", HealthCheckHandler())
 	route.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	route.NoRoute(NotFoundHandler)

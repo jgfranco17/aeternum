@@ -64,13 +64,13 @@ func logRequest() gin.HandlerFunc {
 }
 
 // Configure the router adding routes and middlewares
-func getRouter() *gin.Engine {
+func getRouter(withSystemInfo bool) *gin.Engine {
 	router := gin.Default()
 	router.Use(addLoggerFields())
 	router.Use(logRequest())
 	router.Use(GetCors())
 	router.Use(system.PrometheusMiddleware())
-	system.SetSystemRoutes(router)
+	system.SetSystemRoutes(router, withSystemInfo)
 	v0.SetRoutes(router)
 
 	return router
@@ -84,7 +84,7 @@ Create a backend service instance.
 [OUT] *Service: new backend service instance
 */
 func CreateNewService(port int) *Service {
-	router := getRouter()
+	router := getRouter(true)
 	return &Service{
 		Router: router,
 		Port:   port,
