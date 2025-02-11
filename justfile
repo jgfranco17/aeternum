@@ -23,6 +23,19 @@ tidy:
     cd api && go mod tidy
     go work sync
 
+# Build Docker image manually and push to K8s server
+build-k8s-deployment tag="latest":
+    #!/usr/bin/env bash
+    eval $(minikube docker-env)
+    echo "Using Minikube Docker environment."
+    IMAGE_NAME="{{ PROJECT_NAME }}-api"
+    docker build \
+        --no-cache \
+        -f Dockerfile \
+        -t "${IMAGE_NAME}:{{ tag }}" .
+    echo "Docker image built successfully!"
+    docker images | grep "$IMAGE_NAME"
+
 # Start Compose with load-balancer
 compose-up:
     docker compose -f compose.yaml up --build
@@ -47,12 +60,3 @@ test-sample-request:
 docs:
     mkdocs build
     mkdocs serve
-
-# Build Docker image for the docs site
-build-docs-image tag="latest":
-    #!/usr/bin/env bash
-    docker build \
-        --no-cache \
-        -f docs/Dockerfile \
-        -t {{ PROJECT_NAME }}-docs:{{ tag }} .
-    echo "Docs image built successfully!"
