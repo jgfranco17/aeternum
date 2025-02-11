@@ -8,7 +8,7 @@ progress, and future enhancements planned for the Aeternum API.
 Our goal is to create a robust, user-friendly API testing service that meets the
 needs of developers and organizations worldwide.
 
-!!! warning
+!!! warning "Work in progress"
 
     The project is still in initial development phases, so features are still
     being worked on.

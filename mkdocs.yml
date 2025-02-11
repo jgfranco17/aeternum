@@ -5,21 +5,36 @@ theme:
     text: Roboto
     code: Roboto Mono
   palette:
+    # Dark Mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Toggle light mode
+      primary: lime
+      accent: lime
     # Light Mode
-    scheme: default
-    toggle:
-      icon: material/weather-night
-      name: Light
-    primary: red
-    accent: deep orange
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Toggle dark mode
+      primary: green
+      accent: green
   nav:
     - Home: index.md
     - Roadmap: roadmap.md
     - Usage Guide: usage/api.md
   features:
-    - navigation.instant
-    - search.highlight
+    - announce.dismiss
     - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - navigation.footer
+    - navigation.instant
+    - navigation.indexes
+    - navigation.tracking
+    - search.highlight
+    - search.suggest
   nav_style: primary
   highlightjs: true
   hljs_languages:
