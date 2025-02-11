@@ -38,7 +38,9 @@ way to ensure API reliability.
 
 1. Define a base URL for the API you want to test.
 2. Specify endpoints with expected HTTP response codes.
-3. Run Aeternum API to continuously verify your API's health.
+3. Run your request with Aeternum API.
+
+For more details, refer to the [API documentation](usage/api-v0.md) main page.
 
 ## License
 
