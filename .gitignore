@@ -28,4 +28,5 @@
 # Go workspace file
 go.work.sum
 
-# Environment
+# Terraform
+**/.terraform**
