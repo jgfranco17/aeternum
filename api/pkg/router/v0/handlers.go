@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	core_errors "api/pkg/core/errors"
-	exec "api/pkg/core/execution"
+	exec "execution"
 
 	"github.com/gin-gonic/gin"
 )

@@ -20,8 +20,13 @@ test:
 
 # Sync Go modules
 tidy:
+    go mod tidy
     cd api && go mod tidy
+    cd execution && go mod tidy
     go work sync
+
+cli *args:
+    @go run main.go {{ args }}
 
 # Build Docker image manually and push to K8s server
 build-k8s-deployment tag="latest":

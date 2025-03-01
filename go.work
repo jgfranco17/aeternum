@@ -2,4 +2,8 @@ go 1.22
 
 toolchain go1.23.2
 
-use ./api
+use (
+	./api
+	./cli
+	./execution
+)
