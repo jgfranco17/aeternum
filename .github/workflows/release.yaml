@@ -1,0 +1,69 @@
+name: Production Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "specs.json"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run workspace setup
+        uses: ./.github/actions/setup-workspace
+
+      - name: Run tests
+        run: |
+          just test
+
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: verify
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run setup
+        uses: ./.github/actions/setup-workspace
+
+      - name: Set version
+        id: set-version
+        run: |
+          VERSION=$(jq -r .version info.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Install Github CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install gh
+
+      - name: Build binary
+        id: build-binary
+        run: |
+          just tidy
+          go mod download all
+          mkdir -p builds/linux-amd64 builds/darwin-amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./builds/linux-amd64/aeternum main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./builds/darwin-amd64/aeternum main.go
+
+      - name: Create tarball
+        run: |
+          mkdir -p release
+          tar -czvf release/aeternum-${{ env.VERSION }}-linux-amd64.tar.gz -C ./builds/linux-amd64 aeternum
+          tar -czvf release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz -C ./builds/darwin-amd64 aeternum
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.USER_GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          gh release create "${{ env.VERSION }}" \
+            release/aeternum-${{ env.VERSION }}-linux-amd64.tar.gz \
+            release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz \
+            --notes-file ".github/release/${{ env.VERSION }}.md"

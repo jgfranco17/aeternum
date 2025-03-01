@@ -38,7 +38,7 @@ func NewCommandRegistry(name string, description string, version string) *Comman
 		rootCmd: root,
 	}
 	root.PersistentFlags().CountVarP(&newRegistry.verbosity, "verbose", "v", "Increase verbosity (-v or -vv)")
-	root.Flags().BoolP("version", "V", false, "Print the version number of SmokeSweep")
+	root.Flags().BoolP("version", "V", false, "Print the version number of Aeternum")
 	return newRegistry
 }
 
