@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -18,18 +17,6 @@ type CommandRunner func(cmd *cobra.Command, args []string)
 type CliRunResult struct {
 	ShellOutput string
 	Error       error
-}
-
-func createTempDir(t *testing.T) string {
-	t.Helper()
-	// Create a temporary directory
-	tempDir, err := os.MkdirTemp("", "test-dir-*")
-	if err != nil {
-		t.Fatalf("Failed to create temp directory: %v", err)
-	}
-
-	// Return the directory path for use in tests
-	return tempDir
 }
 
 // Helper function to simulate CLI execution
@@ -47,7 +34,7 @@ func ExecuteTestCommand(cmdGetter CliCommandFunction, args ...string) CliRunResu
 	}
 }
 
-func TestPingCommandSuccess(t *testing.T) {
+func TestPingCommandDefaultsSuccess(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -57,13 +44,24 @@ func TestPingCommandSuccess(t *testing.T) {
 	assert.NoError(t, output.Error, "Unexpected error while executing ping command")
 }
 
+func TestPingCommandMultipleCallsSuccess(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	output := ExecuteTestCommand(GetPingCommand, server.URL, "--count", "10")
+	assert.NoError(t, output.Error, "Unexpected error while executing ping command")
+	assert.Contains(t, output.ShellOutput, "Got 10 of 10 pings successful")
+}
+
 func TestPingCommandServerError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer server.Close()
 
-	output := ExecuteTestCommand(GetPingCommand, server.URL, "--timeout", "1")
+	output := ExecuteTestCommand(GetPingCommand, server.URL, "--count", "1", "--timeout", "1")
 	assert.NoError(t, output.Error, "Unexpected error while executing ping command")
 }
 
@@ -72,6 +70,6 @@ func TestPingCommandUnreachable(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 
-	output := ExecuteTestCommand(GetPingCommand, server.URL, "--timeout", "1")
+	output := ExecuteTestCommand(GetPingCommand, server.URL, "--count", "1", "--timeout", "1")
 	assert.ErrorContains(t, output.Error, "Failed to reach target")
 }

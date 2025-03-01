@@ -13,6 +13,7 @@ var (
 
 func GetPingCommand() *cobra.Command {
 	var timeout int
+	var count int
 	cmd := &cobra.Command{
 		Use:   "ping",
 		Short: "Ping a target URL",
@@ -23,13 +24,14 @@ func GetPingCommand() *cobra.Command {
 				return fmt.Errorf("Not enough arguments, expected 1 but got %d", len(args))
 			}
 			target := args[0]
-			if err := PingUrl(target, timeout); err != nil {
+			if err := PingUrl(target, count, timeout); err != nil {
 				log.Errorf("Ping failed: %v", err)
 				return err
 			}
 			return nil
 		},
 	}
+	cmd.Flags().IntVarP(&count, "count", "c", 1, "Number of ping requests, default is 1")
 	cmd.Flags().IntVarP(&timeout, "timeout", "t", 5, "Timeout duration (in seconds) for the ping request, default is 5s")
 	return cmd
 }
