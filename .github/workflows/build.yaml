@@ -37,4 +37,9 @@ jobs:
         run: |
           just tidy
           go mod download all
-          CGO_ENABLED=0 GOOS=linux go build -o ./aeternum main.go
+          CGO_ENABLED=0 GOOS=linux go build \
+            -ldflags="-X main.version=0.0.0-ci" \
+            -o ./aeternum \
+            main.go
+          chmod +x ./aeternum
+          ./aeternum --version
