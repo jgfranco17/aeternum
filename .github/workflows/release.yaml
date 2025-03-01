@@ -49,8 +49,8 @@ jobs:
           just tidy
           go mod download all
           mkdir -p builds/linux-amd64 builds/darwin-amd64
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./builds/linux-amd64/aeternum main.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./builds/darwin-amd64/aeternum main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./build/linux-amd64/aeternum main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./build/darwin-amd64/aeternum main.go
 
       - name: Create tarball
         run: |
@@ -58,7 +58,7 @@ jobs:
           tar -czvf release/aeternum-${{ env.VERSION }}-linux-amd64.tar.gz -C ./builds/linux-amd64 aeternum
           tar -czvf release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz -C ./builds/darwin-amd64 aeternum
 
-      - name: Create release
+      - name: Create GH release
         env:
           GITHUB_TOKEN: ${{ secrets.USER_GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
@@ -67,3 +67,6 @@ jobs:
             release/aeternum-${{ env.VERSION }}-linux-amd64.tar.gz \
             release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz \
             --notes-file ".github/release/${{ env.VERSION }}.md"
+
+      - name: Create Snapcraft release
+        uses: ./.github/actions/create-snap

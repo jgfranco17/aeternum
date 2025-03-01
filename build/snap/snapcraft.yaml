@@ -1,0 +1,22 @@
+---
+name: aeternum
+base: core22
+version: git
+summary: HTTP API testing made easy
+description: |
+  Aeternum CLI helps you test API endpoints easily and effectively.
+grade: stable
+confinement: strict
+
+parts:
+  prebuilt-binary:
+    plugin: dump
+    source: /build/linux-amd64/
+    stage:
+      - aeternum
+    organize:
+      aeternum-api: bin/aeternum
+
+apps:
+  aeternum:
+    command: aeternum
