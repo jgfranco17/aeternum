@@ -19,10 +19,21 @@ without manual monitoring.
 Built using Golang, Aeternum API runs without requiring a database or external services;
 this makes it lightweight, fast, and easy to deploy.
 
-## Documentation
+### API
 
 Check out the [documentation page](https://jgfranco17.github.io/aeternum-api/) for more
 information about using the API.
+
+### CLI
+
+To run Aeternum locally, we also provide a CLI tool. This allows you to run your API tests
+llocally (from your local machine) or remotely (via request to the API).
+
+To download the CLI, an install script has been provided.
+
+```bash
+wget -O - https://raw.githubusercontent.com/jgfranco17/aeternum/main/install.sh | bash
+```
 
 ## License
 

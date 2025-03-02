@@ -26,11 +26,10 @@ download_binary() {
 }
 
 install_binary() {
-  sudo tar -xzf aeternum.tar.gz -C /usr/local/bin aeternum || {
+  sudo tar -xzf aeternum.tar.gz -C "${INSTALL_PATH}" aeternum || {
     echo "Error: Installation failed."
     exit 1
   }
-  chmod +x /usr/local/bin/aeternum
   rm aeternum.tar.gz
 }
 
@@ -68,4 +67,5 @@ download_binary "$version" "$os" "$arch"
 install_binary
 
 echo "Aeternum installation complete!"
+echo "Installed at: ${INSTALL_PATH}"
 echo "You can now run 'aeternum --version' to verify the installation."
