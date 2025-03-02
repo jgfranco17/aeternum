@@ -10,6 +10,7 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    if: ${{ github.event.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -35,7 +36,7 @@ jobs:
       - name: Set version
         id: set-version
         run: |
-          VERSION=$(jq -r .version info.json)
+          VERSION=$(jq -r .version specs.json)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Install Github CLI
@@ -48,17 +49,18 @@ jobs:
         run: |
           just tidy
           go mod download all
-          mkdir -p builds/linux-amd64 builds/darwin-amd64
+          mkdir -p build/linux-amd64 build/darwin-amd64
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./build/linux-amd64/aeternum main.go
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=${VERSION}" -o ./build/darwin-amd64/aeternum main.go
+          echo "Created "
 
       - name: Create tarball
         run: |
           mkdir -p release
-          tar -czvf release/aeternum-${{ env.VERSION }}-linux-amd64.tar.gz -C ./builds/linux-amd64 aeternum
-          tar -czvf release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz -C ./builds/darwin-amd64 aeternum
+          tar -czvf release/aeternum-${{ env.VERSION }}-linux-amd64.tar.gz -C ./build/linux-amd64 aeternum
+          tar -czvf release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz -C ./build/darwin-amd64 aeternum
 
-      - name: Create GH release
+      - name: Create Github release
         env:
           GITHUB_TOKEN: ${{ secrets.USER_GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
@@ -68,5 +70,7 @@ jobs:
             release/aeternum-${{ env.VERSION }}-darwin-amd64.tar.gz \
             --notes-file ".github/release/${{ env.VERSION }}.md"
 
-      - name: Create Snapcraft release
-        uses: ./.github/actions/create-snap
+      - name: Create release job summary
+        if: success()
+        run: |
+          cat .github/release/${{ env.VERSION }}.md >> $GITHUB_STEP_SUMMARY
