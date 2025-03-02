@@ -3,7 +3,14 @@ services:
     container_name: aeternum-api
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - 8080:8080
+  aeternum-cli:
+    container_name: aeternum-cli
+    build:
+      context: .
+      dockerfile: docker/cli.Dockerfile
     ports:
       - 8080:8080
   aeternum-docs:
