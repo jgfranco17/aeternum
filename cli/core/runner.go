@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -19,31 +20,48 @@ Description: Ping a provided URL for liveness.
 
 [OUT] error: Any error occurred during the test run
 */
-func PingUrl(url string, count int, timeoutSeconds int) error {
+func PingUrl(targetUrl string, count int, timeoutSeconds int) error {
 	client := &http.Client{
 		Timeout: time.Duration(timeoutSeconds) * time.Second,
 	}
-	start := time.Now()
-	log.Debugf("Checking URL %s for liveness", url)
+	log.Debugf("Checking URL %s for liveness", targetUrl)
 	runningTotalDuration := 0
 	successfulPings := 0
+	errorsCaught := []string{}
 	for i := 1; i < count+1; i++ {
-		resp, err := client.Head(url)
+		start := time.Now()
+		request, err := http.NewRequest("GET", targetUrl, nil)
+		resp, err := client.Do(request)
 		duration := time.Since(start)
 		if err != nil {
-			return fmt.Errorf("Failed to reach target %s: %w", url, err)
+			return fmt.Errorf("Failed to reach target %s: %w", targetUrl, err)
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode >= 200 && resp.StatusCode < 400 {
-			outputs.PrintColoredMessage("green", "LIVE", "Target '%s' responded in %vms (%d/%d)", url, duration.Milliseconds(), i, count)
+			outputs.PrintColoredMessage("green", "LIVE", "Target '%s' responded in %vms (%d/%d)", targetUrl, duration.Milliseconds(), i, count)
 			successfulPings += 1
 		} else {
-			outputs.PrintColoredMessage("red", "DOWN", "Target '%s' returned HTTP status %d (%d/%d)", url, resp.StatusCode, i, count)
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				errorsCaught = append(errorsCaught, err.Error())
+			} else if string(body) != "" {
+				errorsCaught = append(errorsCaught, fmt.Sprintf("Got HTTP %d status: %s", resp.StatusCode, string(body)))
+			} else {
+				errorsCaught = append(errorsCaught, fmt.Sprintf("Unknown HTTP %d error", resp.StatusCode))
+			}
+			outputs.PrintColoredMessage("red", "DOWN", "Target '%s' returned HTTP status %d (%d/%d)", targetUrl, resp.StatusCode, i, count)
 		}
 		runningTotalDuration += int(duration.Milliseconds())
 		time.Sleep(500 * time.Millisecond)
 	}
 	averageRequestDuration := runningTotalDuration / count
 	log.Infof("Got %d of %d pings successful, average duration of %vms", successfulPings, count, averageRequestDuration)
+	if len(errorsCaught) > 0 {
+		fullErrorMessage := fmt.Sprintf("Encountered %d errors during ping:", len(errorsCaught))
+		for _, errorMsg := range errorsCaught {
+			fullErrorMessage += fmt.Sprintf("\n\t- %s", errorMsg)
+		}
+		return fmt.Errorf(fullErrorMessage)
+	}
 	return nil
 }
