@@ -63,11 +63,8 @@ compose-down:
 # Run a sample execution
 test-sample-request:
     #!/usr/bin/env bash
-    API_HOST="localhost"
-    PORT="8080"
-    ENDPOINT="v0/tests/run"
-    LOCAL_URL="http://${API_HOST}:${PORT}/${ENDPOINT}"
-    curl -vX POST "$LOCAL_URL" \
+    FULL_URL="${API_BASE_URL}/v0/tests/run"
+    curl -X POST "$FULL_URL" \
         --header "Content-Type: application/json" \
         -d @sample/basic_request.json
 

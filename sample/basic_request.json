@@ -1,12 +1,12 @@
 {
-  "base_url": "https://example.com/api",
+  "base_url": "https://aeternum-api.onrender.com",
   "endpoints": [
     {
-      "path": "/health",
+      "path": "/healthz",
       "expected_status": 200
     },
     {
-      "path": "/users",
+      "path": "/service-info",
       "expected_status": 200
     }
   ]
