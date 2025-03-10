@@ -35,6 +35,12 @@ To download the CLI, an install script has been provided.
 wget -O - https://raw.githubusercontent.com/jgfranco17/aeternum/main/install.sh | bash
 ```
 
+They always say not to just blindly run scripts from the internet, so feel free to examine
+the file first before running.
+
+> [!NOTE]
+> This CLI is still an alpha prototype.
+
 ## License
 
 This project is licensed under the BSD-3 License. See the LICENSE file for more details.
