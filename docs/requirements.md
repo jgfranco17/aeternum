@@ -1,9 +1,13 @@
-# Product Requirements Document
+# Requirements
+
+This page covers the project requirements that Aeternum strives to implement.
 
 ## Project details
 
-Status: `DRAFT`
-Last Updated: 2025 March 10
+| Aspect       | Detail        |
+|--------------|---------------|
+| Status       | `DRAFT`       |
+| Last updated | 2025 March 10 |
 
 ## Scope & requirements
 
