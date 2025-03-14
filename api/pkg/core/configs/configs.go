@@ -3,6 +3,7 @@ package configs
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"api/pkg/core/environment"
 	logger "api/pkg/core/obs"
@@ -44,17 +45,21 @@ func (c *EnvironmentConfig) MongoUri() string {
 }
 
 func getMongoConfigs() (string, string, string, error) {
+	missingEnvVars := []string{}
 	username := environment.GetEnvWithDefault(EnvVarMongoUser, "")
 	if username == "" {
-		return "", "", "", fmt.Errorf("Environment variable %s not set", EnvVarMongoUser)
+		missingEnvVars = append(missingEnvVars, EnvVarMongoUser)
 	}
 	password := environment.GetEnvWithDefault(EnvVarMongoPassword, "")
-	if username == "" {
-		return "", "", "", fmt.Errorf("Environment variable %s not set", EnvVarMongoPassword)
+	if password == "" {
+		missingEnvVars = append(missingEnvVars, EnvVarMongoPassword)
 	}
 	uri := environment.GetEnvWithDefault(EnvVarMongoUri, "")
-	if username == "" {
-		return "", "", "", fmt.Errorf("Environment variable %s not set", EnvVarMongoUri)
+	if uri == "" {
+		missingEnvVars = append(missingEnvVars, EnvVarMongoUri)
+	}
+	if len(missingEnvVars) > 0 {
+		return "", "", "", fmt.Errorf("Missing %d environment variables: %s", len(missingEnvVars), strings.Join(missingEnvVars, ", "))
 	}
 	return username, password, uri, nil
 }

@@ -20,3 +20,10 @@ func TestLoadConfigCompleteConfig(t *testing.T) {
 	assert.Equal(t, "mongo-token", config.MongoPassword())
 	assert.Equal(t, "some-uri", config.MongoUri())
 }
+
+func TestLoadConfigMissingMongoConfigs(t *testing.T) {
+	config, err := NewConfigFromSecrets()
+	assert.Empty(t, config)
+	assert.ErrorContains(t, err, "Missing 3 environment variables")
+	assert.ErrorContains(t, err, "AETERNUM_MONGO_USER, AETERNUM_MONGO_PASSWORD, AETERNUM_MONGO_URI")
+}
