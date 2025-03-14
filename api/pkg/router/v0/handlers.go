@@ -1,15 +1,22 @@
 package v0
 
 import (
+	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 
+	"api/pkg/core/db"
 	core_errors "api/pkg/core/errors"
+	"api/pkg/core/obs"
 	exec "execution"
 
 	"github.com/gin-gonic/gin"
 )
+
+type dbClient interface {
+	Disconnect(ctx context.Context) error
+	GetResult(ctx context.Context, id string) error
+}
 
 func runTests() func(c *gin.Context) error {
 	return func(c *gin.Context) error {
@@ -28,17 +35,30 @@ func runTests() func(c *gin.Context) error {
 	}
 }
 
-func getTestResultsById() func(c *gin.Context) error {
+func getTestResultsById(username string, token string, uri string) func(c *gin.Context) error {
 	return func(c *gin.Context) error {
-		value := c.Query("id")
-		number, err := strconv.Atoi(value)
-		if err != nil {
-			return core_errors.NewInputError(c, "Failed to parse ID: %w", err)
+		log := obs.GetLoggerFromContext(c)
+		resultId := c.Query("id")
+		if resultId == "" {
+			return core_errors.NewInputError(c, "Empty ID parameter")
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"message": fmt.Sprintf("Test results for ID %v", number),
-			"results": []string{"result1", "result2"},
-		})
+		client, err := db.NewMongoClient(c, uri, username, token)
+		defer client.Disconnect(c)
+		if resultId == "" {
+			return fmt.Errorf("Failed to create database client: %w", err)
+		}
+
+		result, err := client.GetResult(c, resultId)
+		if err != nil {
+			return fmt.Errorf("Failed to fetch data from collection: %w", err)
+		}
+		if result == nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": fmt.Sprintf("No result found for ID %s", resultId),
+			})
+		}
+		log.Infof("Found results for ID %s", resultId)
+		c.JSON(http.StatusOK, result)
 		return nil
 	}
 }

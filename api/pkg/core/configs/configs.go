@@ -3,18 +3,16 @@ package configs
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
 
-	env "api/pkg/core/environment"
+	"api/pkg/core/environment"
 	logger "api/pkg/core/obs"
-
-	"gopkg.in/yaml.v3"
 )
 
 const (
-	EnvVarGithubToken string = "AETERNUM_GITHUB_TOKEN"
-	ConfigFileName    string = "config.yaml"
+	EnvVarLogLevel      string = "AETERNUM_LOG_LEVEL"
+	EnvVarMongoUser     string = "AETERNUM_MONGO_USER"
+	EnvVarMongoPassword string = "AETERNUM_MONGO_PASSWORD"
+	EnvVarMongoUri      string = "AETERNUM_MONGO_URI"
 )
 
 type GithubConfig interface {
@@ -23,65 +21,56 @@ type GithubConfig interface {
 }
 
 type EnvironmentConfig struct {
-	EnvGithubBaseUrl string `yaml:"AETERNUM_GITHUB_URL"`
-	EnvGithubToken   string `yaml:"AETERNUM_GITHUB_TOKEN"`
-	EnvLogLevel      string `yaml:"AETERNUM_LOG_LEVEL"`
-}
-
-func (c *EnvironmentConfig) GithubBaseUrl() string {
-	return c.EnvGithubBaseUrl
-}
-
-func (c *EnvironmentConfig) GithubToken() string {
-	return c.EnvGithubToken
+	EnvLogLevel      string
+	EnvMongoUser     string
+	EnvMongoPassword string
+	EnvMongoUri      string
 }
 
 func (c *EnvironmentConfig) LogLevel() string {
 	return c.EnvLogLevel
 }
 
-func loadFromFile(configPath string, config *EnvironmentConfig) error {
-	log := logger.GetLoggerFromContext(context.Background())
-	log.Infof("Loading configuration from %s", configPath)
-	yamlFile, err := os.ReadFile(configPath)
-	if err != nil {
-		return fmt.Errorf("Failed to read config file at %s: %w", configPath, err)
-	}
-	err = yaml.Unmarshal(yamlFile, config)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal config file: %w", err)
-	}
-
-	log.Info("Configuration was loaded successfully.")
-
-	return nil
+func (c *EnvironmentConfig) MongoUser() string {
+	return c.EnvMongoUser
 }
 
-func loadSecrets(config *EnvironmentConfig) error {
+func (c *EnvironmentConfig) MongoPassword() string {
+	return c.EnvMongoPassword
+}
+
+func (c *EnvironmentConfig) MongoUri() string {
+	return c.EnvMongoUri
+}
+
+func getMongoConfigs() (string, string, string, error) {
+	username := environment.GetEnvWithDefault(EnvVarMongoUser, "")
+	if username == "" {
+		return "", "", "", fmt.Errorf("Environment variable %s not set", EnvVarMongoUser)
+	}
+	password := environment.GetEnvWithDefault(EnvVarMongoPassword, "")
+	if username == "" {
+		return "", "", "", fmt.Errorf("Environment variable %s not set", EnvVarMongoPassword)
+	}
+	uri := environment.GetEnvWithDefault(EnvVarMongoUri, "")
+	if username == "" {
+		return "", "", "", fmt.Errorf("Environment variable %s not set", EnvVarMongoUri)
+	}
+	return username, password, uri, nil
+}
+
+func NewConfigFromSecrets() (*EnvironmentConfig, error) {
 	log := logger.GetLoggerFromContext(context.Background())
 	log.Infof("Loading secrets from env")
-	githubToken := env.GetEnvWithDefault(EnvVarGithubToken, "")
-	if githubToken == "" {
-		return fmt.Errorf("Github token was not set")
-	}
-	config.EnvGithubToken = githubToken
-	log.Info("Configuration was loaded successfully.")
-	return nil
-}
-
-// Load the application configuration
-func LoadConfig(configDir string) (*EnvironmentConfig, error) {
-	log := logger.GetLoggerFromContext(context.Background())
-	config := EnvironmentConfig{}
-	configFile := path.Join(configDir, ConfigFileName)
-	log.Infof("Loading configuration from %s", configFile)
-	err := loadFromFile(configFile, &config)
+	mongoUser, mongoPassword, mongoUri, err := getMongoConfigs()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to load configs from file: %w", err)
+		return nil, fmt.Errorf("Failed to load configs: %w", err)
 	}
-	err = loadSecrets(&config)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to load secrets from environment: %w", err)
+	config := EnvironmentConfig{
+		EnvLogLevel:      environment.GetEnvWithDefault(EnvVarLogLevel, "DEBUG"),
+		EnvMongoUser:     mongoUser,
+		EnvMongoPassword: mongoPassword,
+		EnvMongoUri:      mongoUri,
 	}
-	return &config, err
+	return &config, nil
 }

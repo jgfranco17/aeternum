@@ -38,9 +38,12 @@ func main() {
 		logrus.Infof("Running API production server on port %d", *port)
 		gin.SetMode(gin.ReleaseMode)
 	}
-	service := router.CreateNewService(*port)
-	err := service.Run()
+	service, err := router.CreateNewService(*port)
 	if err != nil {
-		logrus.Error("Error starting the server:", err)
+		logrus.Fatalf("Error creating the server: %v", err)
+	}
+	err = service.Run()
+	if err != nil {
+		logrus.Fatalf("Error starting the server: %v", err)
 	}
 }

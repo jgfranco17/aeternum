@@ -64,16 +64,19 @@ func logRequest() gin.HandlerFunc {
 }
 
 // Configure the router adding routes and middlewares
-func getRouter(withSystemInfo bool) *gin.Engine {
+func getRouter(withSystemInfo bool) (*gin.Engine, error) {
 	router := gin.Default()
 	router.Use(addLoggerFields())
 	router.Use(logRequest())
 	router.Use(GetCors())
 	router.Use(system.PrometheusMiddleware())
 	system.SetSystemRoutes(router, withSystemInfo)
-	v0.SetRoutes(router)
+	err := v0.SetRoutes(router)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to set v0 routes: %w", err)
+	}
 
-	return router
+	return router, nil
 }
 
 /*
@@ -83,10 +86,13 @@ Create a backend service instance.
 
 [OUT] *Service: new backend service instance
 */
-func CreateNewService(port int) *Service {
-	router := getRouter(true)
+func CreateNewService(port int) (*Service, error) {
+	router, err := getRouter(true)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create new service instance: %w", err)
+	}
 	return &Service{
 		Router: router,
 		Port:   port,
-	}
+	}, nil
 }
