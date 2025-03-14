@@ -16,9 +16,6 @@ and correctness. With a simple configuration, users can define their API endpoin
 expected HTTP status codes, and response times, ensuring their services remain operational
 without manual monitoring.
 
-Built using Golang, Aeternum API runs without requiring a database or external services;
-this makes it lightweight, fast, and easy to deploy.
-
 ### API
 
 Check out the [documentation page](https://jgfranco17.github.io/aeternum-api/) for more
