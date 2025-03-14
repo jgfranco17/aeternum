@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+if [[ -z "$API_BASE_URL" ]]; then
+    echo "Please set API_BASE_URL to run this script!"
+    exit 1
+else
+    echo "Using base URL: ${API_BASE_URL}"
+fi
+
 SERVICE_INFO_URL="${API_BASE_URL}/service-info"
 echo "Fetching service information: ${SERVICE_INFO_URL}"
 curl "${SERVICE_INFO_URL}" | jq .
