@@ -1,7 +1,7 @@
 PROJECT_NAME := "aeternum"
 
 # Default command
-default:
+_default:
     @just --list --unsorted
 
 # Run debug server

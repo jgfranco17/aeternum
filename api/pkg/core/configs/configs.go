@@ -61,7 +61,6 @@ func getMongoConfigs() (string, string, string, error) {
 
 func NewConfigFromSecrets() (*EnvironmentConfig, error) {
 	log := logger.GetLoggerFromContext(context.Background())
-	log.Infof("Loading secrets from env")
 	mongoUser, mongoPassword, mongoUri, err := getMongoConfigs()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load configs: %w", err)
@@ -72,5 +71,6 @@ func NewConfigFromSecrets() (*EnvironmentConfig, error) {
 		EnvMongoPassword: mongoPassword,
 		EnvMongoUri:      mongoUri,
 	}
+	log.Infof("Loaded configs from environment")
 	return &config, nil
 }
