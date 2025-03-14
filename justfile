@@ -60,14 +60,6 @@ compose-down:
     docker compose -f compose.yaml down
     docker rmi $(docker images | grep "{{ PROJECT_NAME }}" | awk "{print \$3}")
 
-# Run a sample execution
-test-sample-request:
-    #!/usr/bin/env bash
-    FULL_URL="${API_BASE_URL}/v0/tests/run"
-    curl -X POST "$FULL_URL" \
-        --header "Content-Type: application/json" \
-        -d @sample/basic_request.json
-
 # Run the docs server locally
 docs:
     mkdocs build --strict --clean
