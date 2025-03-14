@@ -56,6 +56,7 @@ func getTestResultsById(username string, token string, uri string) func(c *gin.C
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": fmt.Sprintf("No result found for ID %s", resultId),
 			})
+			return fmt.Errorf("No result found for ID %s", resultId)
 		}
 		log.Infof("Found results for ID %s", resultId)
 		c.JSON(http.StatusOK, result)
