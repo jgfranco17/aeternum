@@ -30,6 +30,8 @@ func GetPingCommand() *cobra.Command {
 			}
 			return nil
 		},
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "Number of ping requests, default is 1")
 	cmd.Flags().IntVarP(&timeout, "timeout", "t", 5, "Timeout duration (in seconds) for the ping request, default is 5s")
