@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"api/pkg/core/obs"
+	"github.com/jgfranco17/aeternum/api/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -17,7 +17,7 @@ func init() {
 }
 
 func SetSystemRoutes(route *gin.Engine, includeSystemInfo bool) {
-	log := obs.GetLoggerFromContext(context.Background())
+	log := logging.FromContext(context.Background())
 	startTime = time.Now()
 	if includeSystemInfo {
 		specs, err := GetCodebaseSpecFromFile("specs.json")

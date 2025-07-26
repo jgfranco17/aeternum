@@ -1,4 +1,4 @@
-package obs
+package logging
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func init() {
 }
 
 // Returns an instance of the logger, adding the fields found in the context.
-func GetLoggerFromContext(ctx context.Context) *logrus.Entry {
+func FromContext(ctx context.Context) *logrus.Entry {
 	entry := logrus.WithFields(logrus.Fields{})
 	if ctx == nil {
 		return entry

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"cli/outputs"
+	"github.com/jgfranco17/aeternum/cli/outputs"
 
 	log "github.com/sirupsen/logrus"
 )

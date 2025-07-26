@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	logger "api/pkg/core/obs"
+	logger "github.com/jgfranco17/aeternum/api/pkg/logging"
 
 	"github.com/google/uuid"
 )
@@ -49,7 +49,7 @@ type CheckResponse struct {
 }
 
 func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*CheckResponse, error) {
-	log := logger.GetLoggerFromContext(ctx)
+	log := logger.FromContext(ctx)
 	requestID := fmt.Sprintf("aeternum-v0-%s", uuid.New().String())
 	log.Debugf("Running test requests [ID %s]: %s", requestID, testRequest.BaseURL)
 	var wg sync.WaitGroup

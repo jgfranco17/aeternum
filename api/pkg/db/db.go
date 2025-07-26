@@ -1,17 +1,18 @@
 package db
 
 import (
-	"api/pkg/core/obs"
 	"context"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/jgfranco17/aeternum/api/pkg/logging"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	mongo_options "go.mongodb.org/mongo-driver/mongo/options"
 
-	exec "execution"
+	exec "github.com/jgfranco17/aeternum/execution"
 )
 
 type MongoClient struct {
@@ -20,7 +21,7 @@ type MongoClient struct {
 }
 
 func NewMongoClient(ctx context.Context, uri string, username string, token string) (*MongoClient, error) {
-	log := obs.GetLoggerFromContext(ctx)
+	log := logging.FromContext(ctx)
 
 	serverAPI := mongo_options.ServerAPI(mongo_options.ServerAPIVersion1)
 	appliedUri := fmt.Sprintf("mongodb+srv://%s:%s@%s", username, token, uri)

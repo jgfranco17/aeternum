@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"api/pkg/router"
-	"api/pkg/router/system"
-	v0 "api/pkg/router/v0"
+	"github.com/jgfranco17/aeternum/api/pkg/router"
+	"github.com/jgfranco17/aeternum/api/pkg/router/system"
+	v0 "github.com/jgfranco17/aeternum/api/pkg/router/v0"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

@@ -5,10 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	// Adjust if your CreateOriginInfoHeader function is in another package
-
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert" // Adjust if your custom errors are in a different package
+	"github.com/stretchr/testify/assert"
 )
 
 func createTestContextWithHeader(t *testing.T, headerKey string, headerValue string) *gin.Context {

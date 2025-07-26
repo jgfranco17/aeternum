@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 
-	env "api/pkg/core/environment"
-	"api/pkg/router"
-	"api/pkg/router/system"
+	env "github.com/jgfranco17/aeternum/api/pkg/environment"
+	"github.com/jgfranco17/aeternum/api/pkg/router"
+	"github.com/jgfranco17/aeternum/api/pkg/router/system"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"api/pkg/core/environment"
-	"api/pkg/core/obs"
+	"github.com/jgfranco17/aeternum/api/pkg/environment"
+	"github.com/jgfranco17/aeternum/api/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +40,7 @@ func HealthCheckHandler() func(c *gin.Context) {
 }
 
 func NotFoundHandler(c *gin.Context) {
-	log := obs.GetLoggerFromContext(c)
+	log := logging.FromContext(c)
 	log.Errorf("Non-existent endpoint accessed: %s", c.Request.URL.Path)
 	c.JSON(http.StatusNotFound, newMissingEndpoint(c.Request.URL.Path))
 }

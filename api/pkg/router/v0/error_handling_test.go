@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"testing"
 
-	core_errors "api/pkg/core/errors"
-	"api/pkg/core/obs"
+	"github.com/jgfranco17/aeternum/api/pkg/httperror"
+	"github.com/jgfranco17/aeternum/api/pkg/logging"
 
 	"github.com/go-playground/assert/v2"
 )
 
 func TestHandeInputError(t *testing.T) {
 	t.Run("Simple input error", func(t *testing.T) {
-		inputErr := core_errors.NewInputError(context.Background(), "Some error")
+		inputErr := httperror.NewInputError(context.Background(), "Some error")
 		response := getErrorResponse(context.Background(), inputErr)
 
 		assert.Equal(t, 400, response.Status)
@@ -24,7 +24,7 @@ func TestHandeInputError(t *testing.T) {
 	})
 
 	t.Run("Input error wrapped in generic error", func(t *testing.T) {
-		inputErr := core_errors.NewInputError(context.Background(), "Some error")
+		inputErr := httperror.NewInputError(context.Background(), "Some error")
 
 		err := fmt.Errorf("Outer error: %w", inputErr)
 		response := getErrorResponse(context.Background(), err)
@@ -38,7 +38,7 @@ func TestHandeInputError(t *testing.T) {
 
 	t.Run("Input error wrapping generic error", func(t *testing.T) {
 		err := fmt.Errorf("Inner error")
-		inputErr := core_errors.NewInputError(context.Background(), "Some error: %w", err)
+		inputErr := httperror.NewInputError(context.Background(), "Some error: %w", err)
 
 		response := getErrorResponse(context.Background(), inputErr)
 
@@ -50,9 +50,9 @@ func TestHandeInputError(t *testing.T) {
 	})
 
 	t.Run("Input error with requestId", func(t *testing.T) {
-		ctx := context.WithValue(context.Background(), obs.RequestId, "4dfdcc88-2f3e-41ce-9757-4144cb3974a4")
+		ctx := context.WithValue(context.Background(), logging.RequestId, "4dfdcc88-2f3e-41ce-9757-4144cb3974a4")
 
-		inputErr := core_errors.NewInputError(ctx, "Some error")
+		inputErr := httperror.NewInputError(ctx, "Some error")
 		response := getErrorResponse(context.Background(), inputErr)
 
 		assert.Equal(t, 400, response.Status)
@@ -64,9 +64,9 @@ func TestHandeInputError(t *testing.T) {
 	})
 
 	t.Run("Input error with service version", func(t *testing.T) {
-		ctx := context.WithValue(context.Background(), obs.Version, "1.23.5")
+		ctx := context.WithValue(context.Background(), logging.Version, "1.23.5")
 
-		inputErr := core_errors.NewInputError(ctx, "Some error")
+		inputErr := httperror.NewInputError(ctx, "Some error")
 		response := getErrorResponse(context.Background(), inputErr)
 
 		assert.Equal(t, 400, response.Status)
