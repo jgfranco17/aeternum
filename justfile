@@ -20,13 +20,8 @@ test:
 
 # Sync Go modules
 tidy:
-    go mod tidy
-    cd api && go mod tidy
-    cd execution && go mod tidy
-
-# CLI run wrapper
-cli *args:
-    @go run main.go {{ args }}
+    @go mod tidy
+    @echo "Go modules synced successfully!"
 
 # Build CLI binary
 build-cli:

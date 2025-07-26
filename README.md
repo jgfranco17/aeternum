@@ -21,23 +21,6 @@ without manual monitoring.
 Check out the [documentation page](https://jgfranco17.github.io/aeternum-api/) for more
 information about using the API.
 
-### CLI
-
-To run Aeternum locally, we also provide a CLI tool. This allows you to run your API tests
-llocally (from your local machine) or remotely (via request to the API).
-
-To download the CLI, an install script has been provided.
-
-```bash
-wget -O - https://raw.githubusercontent.com/jgfranco17/aeternum/main/install.sh | bash
-```
-
-They always say not to just blindly run scripts from the internet, so feel free to examine
-the file first before running.
-
-> [!NOTE]
-> This CLI is still an alpha prototype.
-
 ## License
 
 This project is licensed under the BSD-3 License. See the LICENSE file for more details.

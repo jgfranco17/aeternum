@@ -1,8 +1,0 @@
----
-url: "https://example.com"
-endpoints:
-  - path: "/"
-    expected-status: 200
-  - path: "/info"
-    expected-status: 200
-    timeout-ms: 500
