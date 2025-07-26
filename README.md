@@ -18,7 +18,7 @@ without manual monitoring.
 
 ### API
 
-Check out the [documentation page](https://jgfranco17.github.io/aeternum-api/) for more
+Check out the [documentation page](https://jgfranco17.github.io/aeternum/) for more
 information about using the API.
 
 ## License
