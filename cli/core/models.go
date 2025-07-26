@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"cli/outputs"
+	"github.com/jgfranco17/aeternum/cli/outputs"
 )
 
 type TestResult struct {

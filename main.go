@@ -4,8 +4,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"cli/core"
-	"cli/logging"
+	"github.com/jgfranco17/aeternum/cli/core"
+	"github.com/jgfranco17/aeternum/cli/logging"
 )
 
 const (

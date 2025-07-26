@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"api/pkg/core/environment"
-	logger "api/pkg/core/obs"
+	"github.com/jgfranco17/aeternum/api/pkg/environment"
+	logger "github.com/jgfranco17/aeternum/api/pkg/logging"
 )
 
 const (
@@ -65,7 +65,7 @@ func getMongoConfigs() (string, string, string, error) {
 }
 
 func NewConfigFromSecrets() (*EnvironmentConfig, error) {
-	log := logger.GetLoggerFromContext(context.Background())
+	log := logger.FromContext(context.Background())
 	mongoUser, mongoPassword, mongoUri, err := getMongoConfigs()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load configs: %w", err)

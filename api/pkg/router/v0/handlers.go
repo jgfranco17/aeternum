@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"api/pkg/core/db"
-	core_errors "api/pkg/core/errors"
-	"api/pkg/core/obs"
-	exec "execution"
+	exec "github.com/jgfranco17/aeternum/execution"
+
+	"github.com/jgfranco17/aeternum/api/pkg/db"
+	"github.com/jgfranco17/aeternum/api/pkg/httperror"
+	"github.com/jgfranco17/aeternum/api/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,10 +38,10 @@ func runTests() func(c *gin.Context) error {
 
 func getTestResultsById(username string, token string, uri string) func(c *gin.Context) error {
 	return func(c *gin.Context) error {
-		log := obs.GetLoggerFromContext(c)
+		log := logging.FromContext(c)
 		resultId := c.Query("id")
 		if resultId == "" {
-			return core_errors.NewInputError(c, "Empty ID parameter")
+			return httperror.NewInputError(c, "Empty ID parameter")
 		}
 		client, err := db.NewMongoClient(c, uri, username, token)
 		defer client.Disconnect(c)

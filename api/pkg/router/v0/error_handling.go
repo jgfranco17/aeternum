@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	core_errors "api/pkg/core/errors"
-	"api/pkg/core/obs"
+	"github.com/jgfranco17/aeternum/api/pkg/httperror"
+	"github.com/jgfranco17/aeternum/api/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,8 +30,8 @@ func getContextField(ctx context.Context, fieldName string) string {
 }
 
 func getErrorMetadataFromContext(ctx context.Context) errorBody {
-	requestId := getContextField(ctx, obs.RequestId)
-	serviceVersion := getContextField(ctx, obs.Version)
+	requestId := getContextField(ctx, logging.RequestId)
+	serviceVersion := getContextField(ctx, logging.Version)
 
 	return errorBody{
 		RequestID:      requestId,
@@ -45,7 +45,7 @@ func getErrorResponse(ctx context.Context, err error) errorResponse {
 
 	errorMessage := err.Error()
 
-	var inputErr core_errors.InputError
+	var inputErr httperror.InputError
 	if errors.As(err, &inputErr) {
 		body := getErrorMetadataFromContext(inputErr.Context())
 		body.Message = errorMessage
@@ -59,7 +59,7 @@ func getErrorResponse(ctx context.Context, err error) errorResponse {
 
 // Generic error handling
 func handleError(c *gin.Context, err error) {
-	log := obs.GetLoggerFromContext(c)
+	log := logging.FromContext(c)
 	log.Error(err)
 	errorResponse := getErrorResponse(c, err)
 	c.JSON(errorResponse.Status, errorResponse.Body)

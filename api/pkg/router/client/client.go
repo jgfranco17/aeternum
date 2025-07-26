@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	exec "execution"
+	exec "github.com/jgfranco17/aeternum/execution"
 )
 
 // ApiClient defines a client to interact with Aeternum API
