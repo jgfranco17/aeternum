@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
-	"github.com/jgfranco17/aeternum/api/pkg/httperror"
+	"github.com/jgfranco17/aeternum/api/httperror"
 
 	"github.com/gin-gonic/gin"
 )

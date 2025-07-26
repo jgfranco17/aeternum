@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jgfranco17/aeternum/api/pkg/httperror"
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
+	"github.com/jgfranco17/aeternum/api/httperror"
+	"github.com/jgfranco17/aeternum/api/logging"
 
 	"github.com/gin-gonic/gin"
 )

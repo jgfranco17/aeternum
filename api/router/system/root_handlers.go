@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jgfranco17/aeternum/api/pkg/environment"
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
+	"github.com/jgfranco17/aeternum/api/environment"
+	"github.com/jgfranco17/aeternum/api/logging"
 
 	"github.com/gin-gonic/gin"
 )

@@ -6,11 +6,11 @@ _default:
 
 # Run debug server
 run-local port="8080":
-    go run ./api/cmd/main.go --port={{port}} --dev=true
+    go run . --port={{port}} --dev=true
 
 # Run production server
 run-prod port:
-    go run ./api/cmd/main.go --port {{port}} --dev=false
+    go run . --port {{port}} --dev=false
 
 # Execute unit tests
 test:

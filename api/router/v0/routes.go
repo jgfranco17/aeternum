@@ -1,7 +1,7 @@
 package v0
 
 import (
-	"github.com/jgfranco17/aeternum/api/pkg/configs"
+	"github.com/jgfranco17/aeternum/api/configs"
 
 	"github.com/gin-gonic/gin"
 )

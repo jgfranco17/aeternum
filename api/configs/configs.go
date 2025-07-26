@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jgfranco17/aeternum/api/pkg/environment"
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
+	"github.com/jgfranco17/aeternum/api/environment"
+	"github.com/jgfranco17/aeternum/api/logging"
 )
 
 const (
