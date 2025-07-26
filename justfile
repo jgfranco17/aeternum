@@ -23,7 +23,6 @@ tidy:
     go mod tidy
     cd api && go mod tidy
     cd execution && go mod tidy
-    go work sync
 
 # CLI run wrapper
 cli *args:
