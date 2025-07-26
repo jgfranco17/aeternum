@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
+	"github.com/jgfranco17/aeternum/api/logging"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

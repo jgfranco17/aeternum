@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
+	"github.com/jgfranco17/aeternum/api/logging"
 )
 
 const (

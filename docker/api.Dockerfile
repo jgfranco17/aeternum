@@ -13,7 +13,7 @@ COPY . /app
 WORKDIR /app
 
 RUN go mod download all \
-    && CGO_ENABLED=0 GOOS=${TARGET_OS} go build -o ./backend api/cmd/main.go
+    && CGO_ENABLED=0 GOOS=${TARGET_OS} go build -o ./backend .
 
 FROM alpine:latest AS app
 

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	env "github.com/jgfranco17/aeternum/api/pkg/environment"
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
-	"github.com/jgfranco17/aeternum/api/pkg/router/headers"
-	system "github.com/jgfranco17/aeternum/api/pkg/router/system"
-	v0 "github.com/jgfranco17/aeternum/api/pkg/router/v0"
+	env "github.com/jgfranco17/aeternum/api/environment"
+	"github.com/jgfranco17/aeternum/api/logging"
+	"github.com/jgfranco17/aeternum/api/router/headers"
+	system "github.com/jgfranco17/aeternum/api/router/system"
+	v0 "github.com/jgfranco17/aeternum/api/router/v0"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

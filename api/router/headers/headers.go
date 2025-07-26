@@ -3,7 +3,7 @@ package headers
 import (
 	"encoding/json"
 
-	"github.com/jgfranco17/aeternum/api/pkg/httperror"
+	"github.com/jgfranco17/aeternum/api/httperror"
 
 	"github.com/gin-gonic/gin"
 )

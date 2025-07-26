@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jgfranco17/aeternum/api/pkg/logging"
+	"github.com/jgfranco17/aeternum/api/logging"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
