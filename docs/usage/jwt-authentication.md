@@ -218,6 +218,50 @@ Test results are stored in Supabase with the following features:
 - **Metadata Storage**: Additional metrics like endpoint count, pass/fail counts
 - **Timestamp Tracking**: Automatic creation timestamps for all results
 - **Scalable Storage**: Leverages Supabase's PostgreSQL backend
+- **ORM Interface**: Uses the official [Supabase Go SDK](https://github.com/supabase-community/supabase-go) for clean database operations
+
+### Implementation Status
+
+**✅ Fully Implemented:**
+- Authentication system with Supabase Auth
+- Real database operations using Supabase Go SDK
+- API endpoints and routing
+- Database interface and data persistence
+- Error handling and logging
+- User context and security
+
+### Database Schema
+
+The following table must be created in your Supabase project:
+
+```sql
+CREATE TABLE test_results (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    request_id TEXT NOT NULL,
+    base_url TEXT NOT NULL,
+    status TEXT NOT NULL,
+    results JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    metadata JSONB
+);
+
+-- Enable Row Level Security
+ALTER TABLE test_results ENABLE ROW LEVEL SECURITY;
+
+-- Create policy to allow users to only see their own results
+CREATE POLICY "Users can only access their own test results" ON test_results
+    FOR ALL USING (auth.uid()::text = user_id);
+```
+
+### Database Operations
+
+The system uses the [Supabase Go SDK](https://github.com/supabase-community/supabase-go) for clean, ORM-like database operations:
+
+1. **INSERT**: `client.From("test_results").Insert(data).Execute()`
+2. **SELECT**: `client.From("test_results").Select("*").Eq("id", value).Execute()`
+3. **SELECT with filtering**: `client.From("test_results").Select("*").Eq("user_id", userID).Limit(limit).Execute()`
+4. **Error handling**: Proper error responses for database failures
 
 ## Security Features
 
@@ -227,7 +271,30 @@ Test results are stored in Supabase with the following features:
 - **Error Handling**: Consistent error responses with proper HTTP status codes
 - **Input Validation**: Request body validation using Gin's binding
 - **User Data Isolation**: Database queries are scoped to authenticated user
+- **Row Level Security**: Database-level security policies
 
 ## Development Notes
 
-The authentication and database system uses the Supabase Community Go SDK and follows the v0 route pattern with function factories and error handling middleware. The database integration is currently implemented as a placeholder that logs operations - full Supabase database operations will be implemented in a future update.
+The authentication and database system uses the [Supabase Go SDK](https://github.com/supabase-community/supabase-go) and follows the v0 route pattern with function factories and error handling middleware. The database integration is fully implemented using the official SDK's ORM-like interface.
+
+### Technical Implementation
+
+- **Supabase Go SDK**: Uses the official Go client library for clean database operations
+- **ORM-like Interface**: Fluent API for building database queries
+- **JSON Handling**: Automatic marshaling/unmarshaling of data structures
+- **Error Handling**: Comprehensive error handling for database operations
+- **Logging**: Detailed logging for debugging and monitoring
+
+### Performance Considerations
+
+- **Connection Management**: SDK handles connection pooling automatically
+- **Query Optimization**: Efficient queries with proper filtering and pagination
+- **Response Parsing**: Automatic JSON parsing of database responses
+- **Error Recovery**: Graceful handling of database connection issues
+
+### SDK Features Used
+
+- **Postgrest Integration**: Access database using REST API generated from schema
+- **Authentication**: User authentication with email/password
+- **Real-time**: Support for real-time database changes (future enhancement)
+- **Storage**: File storage capabilities (future enhancement)
