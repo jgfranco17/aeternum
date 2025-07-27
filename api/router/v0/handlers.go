@@ -1,12 +1,12 @@
 package v0
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
 	exec "github.com/jgfranco17/aeternum/execution"
 
+	"github.com/jgfranco17/aeternum/api/auth"
 	"github.com/jgfranco17/aeternum/api/db"
 	"github.com/jgfranco17/aeternum/api/httperror"
 	"github.com/jgfranco17/aeternum/api/logging"
@@ -14,13 +14,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type dbClient interface {
-	Disconnect(ctx context.Context) error
-	GetResult(ctx context.Context, id string) error
-}
-
 func runTests() func(c *gin.Context) error {
 	return func(c *gin.Context) error {
+		// Get user claims from context
+		userClaims, exists := auth.GetUserClaims(c)
+		if !exists {
+			return fmt.Errorf("user claims not found in context")
+		}
+
 		var req exec.TestExecutionRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			return fmt.Errorf("Invalid request body: %w", err)
@@ -31,27 +32,49 @@ func runTests() func(c *gin.Context) error {
 			return fmt.Errorf("Failed to execute tests: %w", err)
 		}
 
+		// Store the test result in the database
+		dbClient, err := db.NewClient()
+		if err != nil {
+			return fmt.Errorf("Failed to create database client: %w", err)
+		}
+		defer dbClient.Disconnect(c)
+
+		err = dbClient.StoreTestResult(c, userClaims.UserID, response)
+		if err != nil {
+			// Log the error but don't fail the request
+			log := logging.FromContext(c)
+			log.Errorf("Failed to store test result: %v", err)
+		}
+
 		c.JSON(http.StatusOK, response)
 		return nil
 	}
 }
 
-func getTestResultsById(username string, token string, uri string) func(c *gin.Context) error {
+func getTestResultsById() func(c *gin.Context) error {
 	return func(c *gin.Context) error {
+		// Get user claims from context
+		userClaims, exists := auth.GetUserClaims(c)
+		if !exists {
+			return fmt.Errorf("user claims not found in context")
+		}
+
 		log := logging.FromContext(c)
 		resultId := c.Query("id")
 		if resultId == "" {
 			return httperror.NewInputError(c, "Empty ID parameter")
 		}
-		client, err := db.NewMongoClient(c, uri, username, token)
-		defer client.Disconnect(c)
-		if resultId == "" {
+
+		// Use the new database client
+		dbClient, err := db.NewClient()
+		if err != nil {
 			return fmt.Errorf("Failed to create database client: %w", err)
 		}
+		defer dbClient.Disconnect(c)
 
-		result, err := client.GetResult(c, resultId)
+		result, err := dbClient.GetTestResult(c, userClaims.UserID, resultId)
 		if err != nil {
-			return fmt.Errorf("Failed to fetch data from collection: %w", err)
+			return fmt.Errorf("Failed to fetch test result: %w", err)
 		}
 		if result == nil {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -61,6 +84,43 @@ func getTestResultsById(username string, token string, uri string) func(c *gin.C
 		}
 		log.Infof("Found results for ID %s", resultId)
 		c.JSON(http.StatusOK, result)
+		return nil
+	}
+}
+
+// New handler to get all test results for a user
+func getUserTestResults() func(c *gin.Context) error {
+	return func(c *gin.Context) error {
+		// Get user claims from context
+		userClaims, exists := auth.GetUserClaims(c)
+		if !exists {
+			return fmt.Errorf("user claims not found in context")
+		}
+
+		// Get limit from query parameter, default to 10
+		limit := 10
+		if limitStr := c.Query("limit"); limitStr != "" {
+			if parsed, err := fmt.Sscanf(limitStr, "%d", &limit); err != nil || parsed != 1 {
+				return httperror.NewInputError(c, "Invalid limit parameter")
+			}
+		}
+
+		// Use the new database client
+		dbClient, err := db.NewClient()
+		if err != nil {
+			return fmt.Errorf("Failed to create database client: %w", err)
+		}
+		defer dbClient.Disconnect(c)
+
+		results, err := dbClient.GetUserTestResults(c, userClaims.UserID, limit)
+		if err != nil {
+			return fmt.Errorf("Failed to fetch user test results: %w", err)
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"results": results,
+			"count":   len(results),
+		})
 		return nil
 	}
 }

@@ -14,6 +14,7 @@ const (
 const (
 	ENV_KEY_ENVIRONMENT = "ENVIRONMENT"
 	ENV_KEY_VERSION     = "APP_VERSION"
+	ENV_KEY_JWT_SECRET  = "AETERNUM_JWT_SECRET"
 )
 
 func IsLocalEnvironment() bool {

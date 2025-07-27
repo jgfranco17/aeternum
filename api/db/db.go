@@ -2,67 +2,165 @@ package db
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/jgfranco17/aeternum/api/logging"
-
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	mongo_options "go.mongodb.org/mongo-driver/mongo/options"
-
 	exec "github.com/jgfranco17/aeternum/execution"
+	supabase "github.com/supabase-community/supabase-go"
 )
 
-type MongoClient struct {
-	Client   *mongo.Client
-	Database *mongo.Database
+// TestResult represents a stored test execution result
+type TestResult struct {
+	ID        string                 `json:"id"`
+	UserID    string                 `json:"user_id"`
+	RequestID string                 `json:"request_id"`
+	BaseURL   string                 `json:"base_url"`
+	Status    string                 `json:"status"`
+	Results   []exec.CheckResult     `json:"results"`
+	CreatedAt time.Time              `json:"created_at"`
+	Metadata  map[string]interface{} `json:"metadata,omitempty"`
 }
 
-func NewMongoClient(ctx context.Context, uri string, username string, token string) (*MongoClient, error) {
+// DatabaseClient interface for database operations
+type DatabaseClient interface {
+	StoreTestResult(ctx context.Context, userID string, result *exec.CheckResponse) error
+	GetTestResult(ctx context.Context, userID, requestID string) (*TestResult, error)
+	GetUserTestResults(ctx context.Context, userID string, limit int) ([]TestResult, error)
+	Disconnect(ctx context.Context) error
+}
+
+// SupabaseClient implements DatabaseClient for Supabase
+type SupabaseClient struct {
+	client *supabase.Client
+}
+
+// NewClient creates a new Supabase database client
+func NewClient() (*SupabaseClient, error) {
+	client := GetSupabaseClient()
+	if client == nil {
+		return nil, fmt.Errorf("failed to initialize Supabase client")
+	}
+	return &SupabaseClient{client: client}, nil
+}
+
+// StoreTestResult stores a test execution result in Supabase
+func (s *SupabaseClient) StoreTestResult(ctx context.Context, userID string, result *exec.CheckResponse) error {
 	log := logging.FromContext(ctx)
 
-	serverAPI := mongo_options.ServerAPI(mongo_options.ServerAPIVersion1)
-	appliedUri := fmt.Sprintf("mongodb+srv://%s:%s@%s", username, token, uri)
-	opts := mongo_options.Client().ApplyURI(appliedUri).SetServerAPIOptions(serverAPI)
-
-	// Create a new client and connect to the server
-	client, err := mongo.Connect(ctx, opts)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to MongoDB: %w", err)
+	// Create the test result data
+	testResult := TestResult{
+		ID:        result.RequestID,
+		UserID:    userID,
+		RequestID: result.RequestID,
+		BaseURL:   result.BaseURL,
+		Status:    result.Status,
+		Results:   result.Results,
+		CreatedAt: time.Now(),
+		Metadata: map[string]interface{}{
+			"endpoint_count": len(result.Results),
+			"passed_count":   countPassedTests(result.Results),
+			"failed_count":   countFailedTests(result.Results),
+		},
 	}
 
-	err = client.Ping(ctx, nil)
+	// Use Supabase SDK's ORM-like interface to insert the test result
+	// Based on the documentation: client.From("table").Insert(data).Execute()
+	_, count, err := s.client.From("test_results").Insert(testResult, false, "", "", "").Execute()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to ping MongoDB: %w", err)
+		log.Errorf("Failed to store test result: %v", err)
+		return fmt.Errorf("failed to store test result: %w", err)
 	}
-	log.Debugf("Connection to database secured")
-	return &MongoClient{Client: client, Database: client.Database("test")}, nil
+
+	log.Infof("Successfully stored test result with ID: %s (count: %d)", result.RequestID, count)
+	return nil
 }
 
-func (m *MongoClient) Disconnect(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
+// GetTestResult retrieves a specific test result by request ID
+func (s *SupabaseClient) GetTestResult(ctx context.Context, userID, requestID string) (*TestResult, error) {
+	log := logging.FromContext(ctx)
 
-	return m.Client.Disconnect(ctx)
+	var results []TestResult
+	data, _, err := s.client.From("test_results").
+		Select("*", "exact", false).
+		Eq("id", requestID).
+		Eq("user_id", userID).
+		Execute()
+
+	if err != nil {
+		log.Errorf("Failed to retrieve test result: %v", err)
+		return nil, fmt.Errorf("failed to retrieve test result: %w", err)
+	}
+
+	// Parse the response data
+	if err := json.Unmarshal(data, &results); err != nil {
+		log.Errorf("Failed to unmarshal test result: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal test result: %w", err)
+	}
+
+	if len(results) == 0 {
+		log.Infof("No test result found for ID: %s", requestID)
+		return nil, fmt.Errorf("test result not found")
+	}
+
+	log.Infof("Successfully retrieved test result with ID: %s", requestID)
+	return &results[0], nil
 }
 
-func (m *MongoClient) GetResult(ctx context.Context, id string) (*exec.CheckResponse, error) {
-	var result exec.CheckResponse
-	database := m.Client.Database("tests")
-	if database == nil {
-		return nil, fmt.Errorf("No test database found")
+// GetUserTestResults retrieves all test results for a user
+func (s *SupabaseClient) GetUserTestResults(ctx context.Context, userID string, limit int) ([]TestResult, error) {
+	log := logging.FromContext(ctx)
+
+	// Build the query
+	query := s.client.From("test_results").
+		Select("*", "exact", false).
+		Eq("user_id", userID)
+
+	if limit > 0 {
+		query = query.Limit(limit, "")
 	}
-	collection := database.Collection("results")
-	if collection == nil {
-		return nil, fmt.Errorf("No results collection in test database found")
+
+	data, _, err := query.Execute()
+	if err != nil {
+		log.Errorf("Failed to retrieve user test results: %v", err)
+		return nil, fmt.Errorf("failed to retrieve user test results: %w", err)
 	}
-	err := collection.FindOne(ctx, bson.D{{"id", id}}).Decode(&result)
-	if errors.Is(err, mongo.ErrNoDocuments) {
-		return nil, nil
-	} else if err != nil {
-		return nil, fmt.Errorf("Failed to fetch test results: %w", err)
+
+	// Parse the response data
+	var results []TestResult
+	if err := json.Unmarshal(data, &results); err != nil {
+		log.Errorf("Failed to unmarshal user test results: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal user test results: %w", err)
 	}
-	return &result, nil
+
+	log.Infof("Successfully retrieved %d test results for user: %s", len(results), userID)
+	return results, nil
+}
+
+// Disconnect closes the database connection
+func (s *SupabaseClient) Disconnect(ctx context.Context) error {
+	// Supabase client doesn't require explicit disconnection
+	return nil
+}
+
+// Helper functions
+func countPassedTests(results []exec.CheckResult) int {
+	count := 0
+	for _, result := range results {
+		if result.StatusCode == "PASS" {
+			count++
+		}
+	}
+	return count
+}
+
+func countFailedTests(results []exec.CheckResult) int {
+	count := 0
+	for _, result := range results {
+		if result.StatusCode == "FAIL" {
+			count++
+		}
+	}
+	return count
 }
