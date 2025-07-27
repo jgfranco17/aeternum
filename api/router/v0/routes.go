@@ -15,7 +15,7 @@ func SetRoutes(route *gin.Engine) error {
 		testExecutionRoutes := v0.Group("/tests")
 		{
 			testExecutionRoutes.POST("/run", WithErrorHandling(runTests()))
-			testExecutionRoutes.GET("/results", WithErrorHandling(getTestResultsById("", "", "")))
+			testExecutionRoutes.GET("/results", WithErrorHandling(getTestResultsById()))
 			testExecutionRoutes.GET("/history", WithErrorHandling(getUserTestResults()))
 		}
 	}

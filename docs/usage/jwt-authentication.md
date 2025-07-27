@@ -8,8 +8,8 @@ The JWT secret and Supabase configuration are set via environment variables in y
 
 ```bash
 export AETERNUM_JWT_SECRET="your-secret-key-here"
-export SUPABASE_URL="https://your-project.supabase.co"
-export SUPABASE_ANON_KEY="your-anon-key"
+export AETERNUM_DB_URL="https://your-project.supabase.co"
+export AETERNUM_DB_KEY="your-anon-key"
 ```
 
 ## Authentication Flow
@@ -28,6 +28,7 @@ curl -X POST http://localhost:8080/register \
 ```
 
 **Response:**
+
 ```json
 {
   "id": "user-uuid",
@@ -49,6 +50,7 @@ curl -X POST http://localhost:8080/login \
 ```
 
 **Response:**
+
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -95,6 +97,7 @@ curl -X POST http://localhost:8080/v0/tests/run \
 ```
 
 **Response includes RequestID for later retrieval:**
+
 ```json
 {
   "request_id": "aeternum-v0-uuid-here",
@@ -114,6 +117,7 @@ curl -X GET "http://localhost:8080/v0/tests/results?id=aeternum-v0-uuid-here" \
 ```
 
 **Response:**
+
 ```json
 {
   "id": "aeternum-v0-uuid-here",
@@ -141,6 +145,7 @@ curl -X GET "http://localhost:8080/v0/tests/history?limit=5" \
 ```
 
 **Response:**
+
 ```json
 {
   "results": [
@@ -162,6 +167,7 @@ curl -X GET "http://localhost:8080/v0/tests/history?limit=5" \
 ## Error Responses
 
 ### Unauthorized (401)
+
 - Missing Authorization header
 - Invalid token format
 - Expired or invalid token
@@ -173,6 +179,7 @@ curl -X GET "http://localhost:8080/v0/tests/history?limit=5" \
 ```
 
 ### Bad Request (400)
+
 - Invalid login credentials
 - Malformed request body
 - Registration errors
@@ -185,6 +192,7 @@ curl -X GET "http://localhost:8080/v0/tests/history?limit=5" \
 ```
 
 ### Not Found (404)
+
 - Test result not found for the given ID
 
 ```json
@@ -223,6 +231,7 @@ Test results are stored in Supabase with the following features:
 ### Implementation Status
 
 **✅ Fully Implemented:**
+
 - Authentication system with Supabase Auth
 - Real database operations using Supabase Go SDK
 - API endpoints and routing

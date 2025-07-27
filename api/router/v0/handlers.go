@@ -1,7 +1,6 @@
 package v0
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -14,11 +13,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-type dbClient interface {
-	Disconnect(ctx context.Context) error
-	GetResult(ctx context.Context, id string) error
-}
 
 func runTests() func(c *gin.Context) error {
 	return func(c *gin.Context) error {
@@ -57,7 +51,7 @@ func runTests() func(c *gin.Context) error {
 	}
 }
 
-func getTestResultsById(username string, token string, uri string) func(c *gin.Context) error {
+func getTestResultsById() func(c *gin.Context) error {
 	return func(c *gin.Context) error {
 		// Get user claims from context
 		userClaims, exists := auth.GetUserClaims(c)

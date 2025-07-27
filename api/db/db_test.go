@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"testing"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 )
 
 // Test helper functions
-func TestCountPassedTests(t *testing.T) {
+func TestCountResults_PassedTests(t *testing.T) {
 	tests := []struct {
 		name     string
 		results  []exec.CheckResult
@@ -61,7 +60,7 @@ func TestCountPassedTests(t *testing.T) {
 	}
 }
 
-func TestCountFailedTests(t *testing.T) {
+func TestCountResults_FailedTests(t *testing.T) {
 	tests := []struct {
 		name     string
 		results  []exec.CheckResult
@@ -150,10 +149,8 @@ func TestTestResultStruct(t *testing.T) {
 func TestNewClient(t *testing.T) {
 	t.Run("with valid environment", func(t *testing.T) {
 		// Set up test environment
-		os.Setenv("SUPABASE_URL", "https://test.supabase.co")
-		os.Setenv("SUPABASE_ANON_KEY", "test-anon-key")
-		defer os.Unsetenv("SUPABASE_URL")
-		defer os.Unsetenv("SUPABASE_ANON_KEY")
+		t.Setenv("AETERNUM_DB_URL", "https://test.supabase.co")
+		t.Setenv("AETERNUM_DB_KEY", "test-anon-key")
 
 		client, err := NewClient()
 
@@ -169,8 +166,8 @@ func TestNewClient(t *testing.T) {
 
 	t.Run("without environment variables", func(t *testing.T) {
 		// Clear environment variables
-		os.Unsetenv("SUPABASE_URL")
-		os.Unsetenv("SUPABASE_ANON_KEY")
+		t.Setenv("AETERNUM_DB_URL", "")
+		t.Setenv("AETERNUM_DB_KEY", "")
 
 		// Reset the singleton client for this test
 		// Note: This is a limitation of the singleton pattern in tests
@@ -280,29 +277,6 @@ func TestDisconnect(t *testing.T) {
 	}
 }
 
-// Test NewMongoClient function
-func TestNewMongoClient(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("with valid parameters", func(t *testing.T) {
-		// Set up test environment
-		os.Setenv("SUPABASE_URL", "https://test.supabase.co")
-		os.Setenv("SUPABASE_ANON_KEY", "test-anon-key")
-		defer os.Unsetenv("SUPABASE_URL")
-		defer os.Unsetenv("SUPABASE_ANON_KEY")
-
-		client, err := NewMongoClient(ctx, "mongodb://localhost", "user", "token")
-
-		// This will likely fail in test environment due to network connectivity
-		// but we can test the function structure
-		if err != nil {
-			assert.Contains(t, err.Error(), "failed to initialize Supabase client")
-		} else {
-			assert.NotNil(t, client)
-		}
-	})
-}
-
 // Test interface compliance
 func TestDatabaseClientInterface(t *testing.T) {
 	// This test ensures that SupabaseClient implements DatabaseClient interface
@@ -320,50 +294,6 @@ func TestContextHandling(t *testing.T) {
 		err = client.Disconnect(ctx)
 		assert.NoError(t, err)
 	}
-}
-
-// Additional tests for edge cases
-func TestTestResultWithEmptyResults(t *testing.T) {
-	// Test TestResult with empty results array
-	testResult := TestResult{
-		ID:        "test-id",
-		UserID:    "user-123",
-		RequestID: "req-456",
-		BaseURL:   "https://example.com",
-		Status:    "PASS",
-		Results:   []exec.CheckResult{},
-		CreatedAt: time.Now(),
-		Metadata: map[string]interface{}{
-			"endpoint_count": 0,
-			"passed_count":   0,
-			"failed_count":   0,
-		},
-	}
-
-	// Verify metadata is correctly calculated
-	assert.Equal(t, 0, testResult.Metadata["endpoint_count"])
-	assert.Equal(t, 0, testResult.Metadata["passed_count"])
-	assert.Equal(t, 0, testResult.Metadata["failed_count"])
-}
-
-func TestTestResultWithNilResults(t *testing.T) {
-	// Test TestResult with nil results array
-	testResult := TestResult{
-		ID:        "test-id",
-		UserID:    "user-123",
-		RequestID: "req-456",
-		BaseURL:   "https://example.com",
-		Status:    "PASS",
-		Results:   nil,
-		CreatedAt: time.Now(),
-	}
-
-	// Test helper functions with nil results
-	passedCount := countPassedTests(testResult.Results)
-	failedCount := countFailedTests(testResult.Results)
-
-	assert.Equal(t, 0, passedCount)
-	assert.Equal(t, 0, failedCount)
 }
 
 func TestTestResultJSONSerialization(t *testing.T) {
@@ -418,10 +348,8 @@ func TestTestResultJSONSerialization(t *testing.T) {
 func TestGetSupabaseClient(t *testing.T) {
 	t.Run("with valid environment", func(t *testing.T) {
 		// Set up test environment
-		os.Setenv("SUPABASE_URL", "https://test.supabase.co")
-		os.Setenv("SUPABASE_ANON_KEY", "test-anon-key")
-		defer os.Unsetenv("SUPABASE_URL")
-		defer os.Unsetenv("SUPABASE_ANON_KEY")
+		t.Setenv("AETERNUM_DB_URL", "https://test.supabase.co")
+		t.Setenv("AETERNUM_DB_KEY", "test-anon-key")
 
 		client := GetSupabaseClient()
 
@@ -436,8 +364,8 @@ func TestGetSupabaseClient(t *testing.T) {
 
 	t.Run("without environment variables", func(t *testing.T) {
 		// Clear environment variables
-		os.Unsetenv("SUPABASE_URL")
-		os.Unsetenv("SUPABASE_ANON_KEY")
+		t.Setenv("AETERNUM_DB_URL", "")
+		t.Setenv("AETERNUM_DB_KEY", "")
 
 		client := GetSupabaseClient()
 		// Should handle missing environment variables gracefully

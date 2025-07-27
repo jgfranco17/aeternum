@@ -17,8 +17,8 @@ var (
 func GetSupabaseClient() *supabase.Client {
 	once.Do(func() {
 		client, err := supabase.NewClient(
-			os.Getenv("SUPABASE_URL"),
-			os.Getenv("SUPABASE_ANON_KEY"),
+			os.Getenv("AETERNUM_DB_URL"),
+			os.Getenv("AETERNUM_DB_KEY"),
 			&supabase.ClientOptions{},
 		)
 		if err != nil {

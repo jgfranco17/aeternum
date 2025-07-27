@@ -164,9 +164,3 @@ func countFailedTests(results []exec.CheckResult) int {
 	}
 	return count
 }
-
-// Legacy MongoDB client interface for backward compatibility
-func NewMongoClient(ctx context.Context, uri, username, token string) (DatabaseClient, error) {
-	// For now, return Supabase client as MongoDB replacement
-	return NewClient()
-}
