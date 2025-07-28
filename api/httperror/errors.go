@@ -5,19 +5,24 @@ import (
 	"fmt"
 )
 
-type InputError struct {
-	message string
-	ctx     context.Context
+type HttpError struct {
+	message    string
+	ctx        context.Context
+	statusCode int
 }
 
-func (e InputError) Error() string {
+func (e HttpError) Error() string {
 	return e.message
 }
 
-func (e InputError) Context() context.Context {
+func (e HttpError) Context() context.Context {
 	return e.ctx
 }
 
-func NewInputError(ctx context.Context, format string, a ...any) InputError {
-	return InputError{ctx: ctx, message: fmt.Errorf(format, a...).Error()}
+func (e HttpError) Status() int {
+	return e.statusCode
+}
+
+func New(ctx context.Context, httpStatus int, format string, a ...any) HttpError {
+	return HttpError{ctx: ctx, statusCode: httpStatus, message: fmt.Errorf(format, a...).Error()}
 }

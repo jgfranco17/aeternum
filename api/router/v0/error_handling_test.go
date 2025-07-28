@@ -11,9 +11,9 @@ import (
 	"github.com/go-playground/assert/v2"
 )
 
-func TestHandeInputError(t *testing.T) {
+func TestHandeHTTPError(t *testing.T) {
 	t.Run("Simple input error", func(t *testing.T) {
-		inputErr := httperror.NewInputError(context.Background(), "Some error")
+		inputErr := httperror.New(context.Background(), 500, "Some error")
 		response := getErrorResponse(context.Background(), inputErr)
 
 		assert.Equal(t, 400, response.Status)
@@ -23,8 +23,8 @@ func TestHandeInputError(t *testing.T) {
 
 	})
 
-	t.Run("Input error wrapped in generic error", func(t *testing.T) {
-		inputErr := httperror.NewInputError(context.Background(), "Some error")
+	t.Run("HTTP error wrapped in generic error", func(t *testing.T) {
+		inputErr := httperror.New(context.Background(), 500, "Some error")
 
 		err := fmt.Errorf("Outer error: %w", inputErr)
 		response := getErrorResponse(context.Background(), err)
@@ -36,9 +36,9 @@ func TestHandeInputError(t *testing.T) {
 
 	})
 
-	t.Run("Input error wrapping generic error", func(t *testing.T) {
+	t.Run("HTTP error wrapping generic error", func(t *testing.T) {
 		err := fmt.Errorf("Inner error")
-		inputErr := httperror.NewInputError(context.Background(), "Some error: %w", err)
+		inputErr := httperror.New(context.Background(), 500, "Some error: %w", err)
 
 		response := getErrorResponse(context.Background(), inputErr)
 
@@ -49,10 +49,10 @@ func TestHandeInputError(t *testing.T) {
 
 	})
 
-	t.Run("Input error with requestId", func(t *testing.T) {
+	t.Run("HTTP error with requestId", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), logging.RequestId, "4dfdcc88-2f3e-41ce-9757-4144cb3974a4")
 
-		inputErr := httperror.NewInputError(ctx, "Some error")
+		inputErr := httperror.New(ctx, 500, "Some error")
 		response := getErrorResponse(context.Background(), inputErr)
 
 		assert.Equal(t, 400, response.Status)
@@ -63,10 +63,10 @@ func TestHandeInputError(t *testing.T) {
 
 	})
 
-	t.Run("Input error with service version", func(t *testing.T) {
+	t.Run("HTTP error with service version", func(t *testing.T) {
 		ctx := context.WithValue(context.Background(), logging.Version, "1.23.5")
 
-		inputErr := httperror.NewInputError(ctx, "Some error")
+		inputErr := httperror.New(ctx, 500, "Some error")
 		response := getErrorResponse(context.Background(), inputErr)
 
 		assert.Equal(t, 400, response.Status)

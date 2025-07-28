@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/jgfranco17/aeternum/api/environment"
 	supabase "github.com/supabase-community/supabase-go"
 )
 
@@ -17,8 +18,8 @@ var (
 func GetSupabaseClient() *supabase.Client {
 	once.Do(func() {
 		client, err := supabase.NewClient(
-			os.Getenv("AETERNUM_DB_URL"),
-			os.Getenv("AETERNUM_DB_KEY"),
+			os.Getenv(environment.ENV_KEY_DB_URL),
+			os.Getenv(environment.ENV_KEY_DB_KEY),
 			&supabase.ClientOptions{},
 		)
 		if err != nil {

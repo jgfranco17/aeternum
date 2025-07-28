@@ -8,25 +8,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInputErrorNewSimpleError(t *testing.T) {
+func TestHttpErrorNewSimpleError(t *testing.T) {
 	const inputErrorMessage string = "This is an input error"
 
-	err := NewInputError(context.Background(), inputErrorMessage)
+	err := New(context.Background(), 400, inputErrorMessage)
 
-	var expectedError InputError
+	var expectedError HttpError
 	assert.ErrorAs(t, err, &expectedError)
 	assert.Equal(t, inputErrorMessage, err.Error())
 }
 
-func TestInputErrorNewWrappedError(t *testing.T) {
+func TestHttpErrorNewWrappedError(t *testing.T) {
 	const rootMessage string = "This is the root"
 	inputErrorMessage := "This is an input error: %v"
 
 	rootError := fmt.Errorf(rootMessage)
 
-	err := NewInputError(context.Background(), inputErrorMessage, rootError)
+	err := New(context.Background(), 500, inputErrorMessage, rootError)
 
-	var expectedError InputError
+	var expectedError HttpError
 	assert.ErrorAs(t, err, &expectedError)
 	assert.Equal(t, "This is an input error: This is the root", err.Error())
 }

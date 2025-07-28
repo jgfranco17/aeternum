@@ -2,6 +2,7 @@ package headers
 
 import (
 	"encoding/json"
+	"net/http"
 
 	"github.com/jgfranco17/aeternum/api/httperror"
 
@@ -20,12 +21,12 @@ func CreateOriginInfoHeader(c *gin.Context) (OriginInfo, error) {
 	jsonHeader := OriginInfo{}
 
 	if len(header) == 0 {
-		return jsonHeader, httperror.NewInputError(c, "X-Origin-Info header not found.")
+		return jsonHeader, httperror.New(c, http.StatusBadRequest, "X-Origin-Info header not found.")
 	}
 
 	err := json.Unmarshal([]byte(header[0]), &jsonHeader)
 	if err != nil {
-		return jsonHeader, httperror.NewInputError(c, "Header schema validation: %s", err.Error())
+		return jsonHeader, httperror.New(c, http.StatusBadRequest, "Header schema validation: %s", err.Error())
 	}
 	return jsonHeader, nil
 }

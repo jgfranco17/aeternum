@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func runTests() func(c *gin.Context) error {
+func runTests(dbClient db.DatabaseClient) func(c *gin.Context) error {
 	return func(c *gin.Context) error {
 		// Get user claims from context
 		userClaims, exists := auth.GetUserClaims(c)
@@ -32,13 +32,6 @@ func runTests() func(c *gin.Context) error {
 			return fmt.Errorf("Failed to execute tests: %w", err)
 		}
 
-		// Store the test result in the database
-		dbClient, err := db.NewClient()
-		if err != nil {
-			return fmt.Errorf("Failed to create database client: %w", err)
-		}
-		defer dbClient.Disconnect(c)
-
 		err = dbClient.StoreTestResult(c, userClaims.UserID, response)
 		if err != nil {
 			// Log the error but don't fail the request
@@ -51,7 +44,7 @@ func runTests() func(c *gin.Context) error {
 	}
 }
 
-func getTestResultsById() func(c *gin.Context) error {
+func getTestResultsById(dbClient db.DatabaseClient) func(c *gin.Context) error {
 	return func(c *gin.Context) error {
 		// Get user claims from context
 		userClaims, exists := auth.GetUserClaims(c)
@@ -62,15 +55,8 @@ func getTestResultsById() func(c *gin.Context) error {
 		log := logging.FromContext(c)
 		resultId := c.Query("id")
 		if resultId == "" {
-			return httperror.NewInputError(c, "Empty ID parameter")
+			return httperror.New(c, http.StatusBadRequest, "Empty ID parameter")
 		}
-
-		// Use the new database client
-		dbClient, err := db.NewClient()
-		if err != nil {
-			return fmt.Errorf("Failed to create database client: %w", err)
-		}
-		defer dbClient.Disconnect(c)
 
 		result, err := dbClient.GetTestResult(c, userClaims.UserID, resultId)
 		if err != nil {
@@ -89,28 +75,21 @@ func getTestResultsById() func(c *gin.Context) error {
 }
 
 // New handler to get all test results for a user
-func getUserTestResults() func(c *gin.Context) error {
+func getUserTestResults(dbClient db.DatabaseClient) func(c *gin.Context) error {
 	return func(c *gin.Context) error {
 		// Get user claims from context
 		userClaims, exists := auth.GetUserClaims(c)
 		if !exists {
-			return fmt.Errorf("user claims not found in context")
+			return httperror.New(c, http.StatusBadRequest, "user claims not found in request context")
 		}
 
 		// Get limit from query parameter, default to 10
 		limit := 10
 		if limitStr := c.Query("limit"); limitStr != "" {
 			if parsed, err := fmt.Sscanf(limitStr, "%d", &limit); err != nil || parsed != 1 {
-				return httperror.NewInputError(c, "Invalid limit parameter")
+				return httperror.New(c, http.StatusBadRequest, "Invalid limit parameter")
 			}
 		}
-
-		// Use the new database client
-		dbClient, err := db.NewClient()
-		if err != nil {
-			return fmt.Errorf("Failed to create database client: %w", err)
-		}
-		defer dbClient.Disconnect(c)
 
 		results, err := dbClient.GetUserTestResults(c, userClaims.UserID, limit)
 		if err != nil {

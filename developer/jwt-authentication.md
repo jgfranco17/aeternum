@@ -1,6 +1,7 @@
 # JWT Authentication & Supabase Integration
 
-The Aeternum API now includes JWT (JSON Web Token) authentication for securing endpoints, powered by Supabase Auth, and Supabase database integration for storing and retrieving test results.
+The Aeternum API now includes JWT (JSON Web Token) authentication for securing endpoints, powered
+by Supabase Auth, and Supabase database integration for storing and retrieving test results.
 
 ## Environment Setup
 
@@ -16,7 +17,7 @@ export AETERNUM_DB_KEY="your-anon-key"
 
 ### 1. Registration
 
-To create a new user account, make a POST request to the `/register` endpoint:
+To create a new user account, make a `POST` request to the `/register` endpoint:
 
 ```bash
 curl -X POST http://localhost:8080/register \
@@ -265,7 +266,8 @@ CREATE POLICY "Users can only access their own test results" ON test_results
 
 ### Database Operations
 
-The system uses the [Supabase Go SDK](https://github.com/supabase-community/supabase-go) for clean, ORM-like database operations:
+The system uses the [Supabase Go SDK](https://github.com/supabase-community/supabase-go) for
+clean, ORM-like database operations:
 
 1. **INSERT**: `client.From("test_results").Insert(data).Execute()`
 2. **SELECT**: `client.From("test_results").Select("*").Eq("id", value).Execute()`
@@ -284,7 +286,9 @@ The system uses the [Supabase Go SDK](https://github.com/supabase-community/supa
 
 ## Development Notes
 
-The authentication and database system uses the [Supabase Go SDK](https://github.com/supabase-community/supabase-go) and follows the v0 route pattern with function factories and error handling middleware. The database integration is fully implemented using the official SDK's ORM-like interface.
+The authentication and database system uses the [Supabase Go SDK](https://github.com/supabase-community/supabase-go)
+and follows the v0 route pattern with function factories and error handling middleware. The
+database integration is fully implemented using the official SDK's ORM-like interface.
 
 ### Technical Implementation
 

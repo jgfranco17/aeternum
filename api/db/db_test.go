@@ -261,39 +261,10 @@ func TestGetUserTestResults(t *testing.T) {
 	}
 }
 
-// Test Disconnect function
-func TestDisconnect(t *testing.T) {
-	ctx := context.Background()
-
-	// Test that the function can be called
-	client, err := NewClient()
-	if err != nil {
-		// Expected in test environment
-		assert.Contains(t, err.Error(), "failed to initialize Supabase client")
-	} else {
-		err = client.Disconnect(ctx)
-		// Disconnect should always return nil for Supabase
-		assert.NoError(t, err)
-	}
-}
-
 // Test interface compliance
 func TestDatabaseClientInterface(t *testing.T) {
 	// This test ensures that SupabaseClient implements DatabaseClient interface
 	var _ DatabaseClient = (*SupabaseClient)(nil)
-}
-
-// Test context handling
-func TestContextHandling(t *testing.T) {
-	ctx := context.Background()
-
-	// Test that context is properly passed through
-	// This is mainly to ensure the functions handle context correctly
-	client, err := NewClient()
-	if err == nil {
-		err = client.Disconnect(ctx)
-		assert.NoError(t, err)
-	}
 }
 
 func TestTestResultJSONSerialization(t *testing.T) {

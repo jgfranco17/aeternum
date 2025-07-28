@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/jgfranco17/aeternum/api/db"
 	env "github.com/jgfranco17/aeternum/api/environment"
 	"github.com/jgfranco17/aeternum/api/router"
 	"github.com/jgfranco17/aeternum/api/router/system"
@@ -38,7 +39,11 @@ func main() {
 		logrus.Infof("Running API production server on port %d", *port)
 		gin.SetMode(gin.ReleaseMode)
 	}
-	service, err := router.CreateNewService(*port)
+	dbClient, err := db.NewClient()
+	if err != nil {
+		logrus.Fatalf("Error initializing database client: %v", err)
+	}
+	service, err := router.CreateNewService(*port, dbClient)
 	if err != nil {
 		logrus.Fatalf("Error creating the server: %v", err)
 	}

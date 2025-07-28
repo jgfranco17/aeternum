@@ -3,10 +3,12 @@ package routertests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/jgfranco17/aeternum/api/db"
 	"github.com/jgfranco17/aeternum/api/router"
 	"github.com/jgfranco17/aeternum/api/router/system"
 	v0 "github.com/jgfranco17/aeternum/api/router/v0"
@@ -62,27 +64,31 @@ func (s *TestServer) WithSystemRoutes() *TestServer {
 	return s
 }
 
-func (s *TestServer) WithV0Routes() *TestServer {
-	v0.SetRoutes(s.service.Router)
+func (s *TestServer) WithV0Routes(dbClient db.DatabaseClient) *TestServer {
+	v0.SetRoutes(s.service.Router, dbClient)
 	return s
 }
 
-func (s *TestServer) RunTestRequests(t *testing.T, sampleRequests []ExampleHttpRequest) {
+func (s *TestServer) RunRequests(t *testing.T, sampleRequests []ExampleHttpRequest, token string) {
 	t.Helper()
 
 	for _, r := range sampleRequests {
 		// Create the request with the provided method, endpoint, and body (if any)
-		var reqBody *http.Request
+		var request *http.Request
 		if r.Payload != "" {
-			reqBody = httptest.NewRequest(r.Method, r.Endpoint, bytes.NewBuffer([]byte(r.Payload)))
+			request = httptest.NewRequest(r.Method, r.Endpoint, bytes.NewBuffer([]byte(r.Payload)))
 		} else {
-			reqBody = httptest.NewRequest(r.Method, r.Endpoint, nil)
+			request = httptest.NewRequest(r.Method, r.Endpoint, nil)
 		}
-		recorder := httptest.NewRecorder()
-		s.service.Router.ServeHTTP(recorder, reqBody)
-		assert.Equal(t, r.ExpectedCode, recorder.Code, "Expected status code to match")
+		request.Header.Set("Content-Type", "application/json")
+		if token != "" {
+			request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+		}
 
-		// Check if the response body matches the expected fields
+		recorder := httptest.NewRecorder()
+		s.service.Router.ServeHTTP(recorder, request)
+		assert.Equalf(t, r.ExpectedCode, recorder.Code, "Expected status %d but got %d", r.ExpectedCode, recorder.Code)
+
 		var responseBody map[string]interface{}
 		err := json.Unmarshal(recorder.Body.Bytes(), &responseBody)
 		assert.NoErrorf(t, err, "Failed to unmarshal JSON response body")

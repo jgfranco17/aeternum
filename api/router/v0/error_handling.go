@@ -45,7 +45,7 @@ func getErrorResponse(ctx context.Context, err error) errorResponse {
 
 	errorMessage := err.Error()
 
-	var inputErr httperror.InputError
+	var inputErr httperror.HttpError
 	if errors.As(err, &inputErr) {
 		body := getErrorMetadataFromContext(inputErr.Context())
 		body.Message = errorMessage

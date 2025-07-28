@@ -28,7 +28,6 @@ type DatabaseClient interface {
 	StoreTestResult(ctx context.Context, userID string, result *exec.CheckResponse) error
 	GetTestResult(ctx context.Context, userID, requestID string) (*TestResult, error)
 	GetUserTestResults(ctx context.Context, userID string, limit int) ([]TestResult, error)
-	Disconnect(ctx context.Context) error
 }
 
 // SupabaseClient implements DatabaseClient for Supabase
@@ -69,7 +68,6 @@ func (s *SupabaseClient) StoreTestResult(ctx context.Context, userID string, res
 	// Based on the documentation: client.From("table").Insert(data).Execute()
 	_, count, err := s.client.From("test_results").Insert(testResult, false, "", "", "").Execute()
 	if err != nil {
-		log.Errorf("Failed to store test result: %v", err)
 		return fmt.Errorf("failed to store test result: %w", err)
 	}
 
@@ -89,13 +87,11 @@ func (s *SupabaseClient) GetTestResult(ctx context.Context, userID, requestID st
 		Execute()
 
 	if err != nil {
-		log.Errorf("Failed to retrieve test result: %v", err)
 		return nil, fmt.Errorf("failed to retrieve test result: %w", err)
 	}
 
 	// Parse the response data
 	if err := json.Unmarshal(data, &results); err != nil {
-		log.Errorf("Failed to unmarshal test result: %v", err)
 		return nil, fmt.Errorf("failed to unmarshal test result: %w", err)
 	}
 
@@ -123,25 +119,17 @@ func (s *SupabaseClient) GetUserTestResults(ctx context.Context, userID string, 
 
 	data, _, err := query.Execute()
 	if err != nil {
-		log.Errorf("Failed to retrieve user test results: %v", err)
 		return nil, fmt.Errorf("failed to retrieve user test results: %w", err)
 	}
 
 	// Parse the response data
 	var results []TestResult
 	if err := json.Unmarshal(data, &results); err != nil {
-		log.Errorf("Failed to unmarshal user test results: %v", err)
 		return nil, fmt.Errorf("failed to unmarshal user test results: %w", err)
 	}
 
 	log.Infof("Successfully retrieved %d test results for user: %s", len(results), userID)
 	return results, nil
-}
-
-// Disconnect closes the database connection
-func (s *SupabaseClient) Disconnect(ctx context.Context) error {
-	// Supabase client doesn't require explicit disconnection
-	return nil
 }
 
 // Helper functions

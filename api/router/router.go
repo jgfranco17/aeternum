@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jgfranco17/aeternum/api/db"
 	env "github.com/jgfranco17/aeternum/api/environment"
 	"github.com/jgfranco17/aeternum/api/logging"
 	"github.com/jgfranco17/aeternum/api/router/headers"
@@ -64,14 +65,14 @@ func logRequest() gin.HandlerFunc {
 }
 
 // Configure the router adding routes and middlewares
-func getRouter(withSystemInfo bool) (*gin.Engine, error) {
+func getRouter(dbClient db.DatabaseClient, withSystemInfo bool) (*gin.Engine, error) {
 	router := gin.Default()
 	router.Use(addLoggerFields())
 	router.Use(logRequest())
 	router.Use(GetCors())
 	router.Use(system.PrometheusMiddleware())
 	system.SetSystemRoutes(router, withSystemInfo)
-	err := v0.SetRoutes(router)
+	err := v0.SetRoutes(router, dbClient)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to set v0 routes: %w", err)
 	}
@@ -86,8 +87,8 @@ Create a backend service instance.
 
 [OUT] *Service: new backend service instance
 */
-func CreateNewService(port int) (*Service, error) {
-	router, err := getRouter(true)
+func CreateNewService(port int, dbClient db.DatabaseClient) (*Service, error) {
+	router, err := getRouter(dbClient, true)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create new service instance: %w", err)
 	}

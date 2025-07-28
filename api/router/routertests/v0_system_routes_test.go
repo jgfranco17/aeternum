@@ -18,5 +18,5 @@ func TestCheckNotFoundEndpoint(t *testing.T) {
 			Payload:      "",
 		},
 	}
-	testService.RunTestRequests(t, testRequest)
+	testService.RunRequests(t, testRequest, "")
 }
