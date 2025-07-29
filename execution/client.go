@@ -11,12 +11,14 @@ import (
 	"github.com/jgfranco17/aeternum/api/logging"
 )
 
+type Status string
+
 const (
-	StatusPending     string = "PENDING"
-	StatusFail        string = "FAIL"
-	StatusPass        string = "PASS"
-	StatusError       string = "ERROR"
-	StatusUnspecified string = "UNSPECIFIED"
+	StatusPending     Status = "PENDING"
+	StatusFail        Status = "FAIL"
+	StatusPass        Status = "PASS"
+	StatusError       Status = "ERROR"
+	StatusUnspecified Status = "UNSPECIFIED"
 )
 
 type Endpoint struct {
@@ -43,7 +45,7 @@ type CheckResult struct {
 type CheckResponse struct {
 	RequestID string        `json:"request_id"`
 	BaseURL   string        `json:"base_url"`
-	Status    string        `json:"status"`
+	Status    Status        `json:"status"`
 	Results   []CheckResult `json:"results"`
 }
 
@@ -99,7 +101,7 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 	if len(requestErrors) > 0 {
 		return nil, fmt.Errorf("Failed to make %d requests: %v", len(requestErrors), requestErrors)
 	}
-	var overallStatus string
+	var overallStatus Status
 	if len(failedTests) > 0 {
 		overallStatus = StatusFail
 	} else {

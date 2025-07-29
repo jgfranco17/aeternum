@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jgfranco17/aeternum/api/logging"
+	"github.com/jgfranco17/aeternum/execution"
 	exec "github.com/jgfranco17/aeternum/execution"
 	supabase "github.com/supabase-community/supabase-go"
 )
@@ -17,7 +18,7 @@ type TestResult struct {
 	UserID    string                 `json:"user_id"`
 	RequestID string                 `json:"request_id"`
 	BaseURL   string                 `json:"base_url"`
-	Status    string                 `json:"status"`
+	Status    execution.Status       `json:"status"`
 	Results   []exec.CheckResult     `json:"results"`
 	CreatedAt time.Time              `json:"created_at"`
 	Metadata  map[string]interface{} `json:"metadata,omitempty"`
