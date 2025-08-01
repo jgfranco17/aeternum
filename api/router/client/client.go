@@ -66,7 +66,7 @@ func (c *ApiClient) Request(method, endpoint string, payload interface{}) error 
 	}
 
 	// Decode JSON response if response struct is provided
-	var response exec.CheckResponse
+	var response exec.OutputResponse
 	err = json.Unmarshal(respData, &response)
 	if err != nil {
 		return fmt.Errorf("Failed to decode response JSON: %w", err)

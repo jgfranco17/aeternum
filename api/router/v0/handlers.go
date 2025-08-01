@@ -4,42 +4,40 @@ import (
 	"fmt"
 	"net/http"
 
-	exec "github.com/jgfranco17/aeternum/execution"
-
 	"github.com/jgfranco17/aeternum/api/auth"
 	"github.com/jgfranco17/aeternum/api/db"
 	"github.com/jgfranco17/aeternum/api/httperror"
 	"github.com/jgfranco17/aeternum/api/logging"
+	"github.com/jgfranco17/aeternum/execution"
 
 	"github.com/gin-gonic/gin"
 )
 
 func runTests(dbClient db.DatabaseClient) func(c *gin.Context) error {
 	return func(c *gin.Context) error {
-		// Get user claims from context
+		log := logging.FromContext(c)
 		userClaims, exists := auth.GetUserClaims(c)
 		if !exists {
 			return fmt.Errorf("user claims not found in context")
 		}
 
-		var req exec.TestExecutionRequest
+		var req execution.TargetDefinition
 		if err := c.ShouldBindJSON(&req); err != nil {
-			return fmt.Errorf("Invalid request body: %w", err)
+			return httperror.New(c, http.StatusBadRequest, "invalid request body: %w", err)
 		}
 
-		response, err := exec.ExecuteTests(c, req)
+		log.Debugf("Running %d tests for %s", len(req.Endpoints), req.BaseURL)
+		response, err := execution.Run(c, req)
 		if err != nil {
-			return fmt.Errorf("Failed to execute tests: %w", err)
+			return fmt.Errorf("failed to execute tests: %w", err)
 		}
-
 		err = dbClient.StoreTestResult(c, userClaims.UserID, response)
 		if err != nil {
-			// Log the error but don't fail the request
-			log := logging.FromContext(c)
-			log.Errorf("Failed to store test result: %v", err)
+			return httperror.New(c, http.StatusServiceUnavailable, "failed to store data in database: %w", err)
 		}
 
 		c.JSON(http.StatusOK, response)
+		log.Infof("Test execution completed successfully for request ID %s", response.RequestID)
 		return nil
 	}
 }

@@ -16,7 +16,7 @@ run-prod port:
 test:
     @echo "Running unit tests!"
     go clean -testcache
-    go test -cover ./api/...
+    go test -cover ./...
 
 # Sync Go modules
 tidy:

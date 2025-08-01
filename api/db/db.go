@@ -1,3 +1,4 @@
+// Package db mmanages the clients and interface for database management.
 package db
 
 import (
@@ -26,7 +27,7 @@ type TestResult struct {
 
 // DatabaseClient interface for database operations
 type DatabaseClient interface {
-	StoreTestResult(ctx context.Context, userID string, result *exec.CheckResponse) error
+	StoreTestResult(ctx context.Context, userID string, result *exec.OutputResponse) error
 	GetTestResult(ctx context.Context, userID, requestID string) (*TestResult, error)
 	GetUserTestResults(ctx context.Context, userID string, limit int) ([]TestResult, error)
 }
@@ -46,7 +47,7 @@ func NewClient() (*SupabaseClient, error) {
 }
 
 // StoreTestResult stores a test execution result in Supabase
-func (s *SupabaseClient) StoreTestResult(ctx context.Context, userID string, result *exec.CheckResponse) error {
+func (s *SupabaseClient) StoreTestResult(ctx context.Context, userID string, result *exec.OutputResponse) error {
 	log := logging.FromContext(ctx)
 
 	// Create the test result data
@@ -86,7 +87,6 @@ func (s *SupabaseClient) GetTestResult(ctx context.Context, userID, requestID st
 		Eq("id", requestID).
 		Eq("user_id", userID).
 		Execute()
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve test result: %w", err)
 	}

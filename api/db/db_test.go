@@ -191,7 +191,7 @@ func TestStoreTestResult(t *testing.T) {
 	ctx := context.Background()
 
 	// Create test data
-	checkResponse := &exec.CheckResponse{
+	checkResponse := &exec.OutputResponse{
 		RequestID: "test-request-id",
 		BaseURL:   "https://example.com",
 		Status:    "PASS",
