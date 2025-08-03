@@ -1,16 +1,16 @@
 PROJECT_NAME := "aeternum"
 
-# Default command
+# List all available commands
 _default:
     @just --list --unsorted
 
 # Run debug server
 run-local port="8080":
-    go run . --port={{port}} --dev=true
+    go run . --port={{ port }} --dev=true
 
 # Run production server
-run-prod port:
-    go run . --port {{port}} --dev=false
+run-prod port="8080":
+    go run . --port {{ port }} --dev=false
 
 # Execute unit tests
 test:
@@ -22,15 +22,6 @@ test:
 tidy:
     @go mod tidy
     @echo "Go modules synced successfully!"
-
-# Build CLI binary
-build-cli:
-    #!/usr/bin/env bash
-    echo "Building {{ PROJECT_NAME }} binary..."
-    go mod download all
-    VERSION=$(jq -r .version specs.json)
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.version=${VERSION}" -o ./aeternum main.go
-    echo "Built binary for {{ PROJECT_NAME }} ${VERSION} successfully!"
 
 # Build Docker image manually and push to K8s server
 build-k8s-deployment tag="latest":
@@ -45,11 +36,11 @@ build-k8s-deployment tag="latest":
     echo "Docker image built successfully!"
     docker images | grep "$IMAGE_NAME"
 
-# Start Compose with load-balancer
+# Start Docker Compose with load-balancer
 compose-up:
     docker compose -f compose.yaml up --build
 
-# Stop all Compose containers and delete images created
+# Stop all Docker Compose containers and delete images created
 compose-down:
     docker compose -f compose.yaml down
     docker rmi $(docker images | grep "{{ PROJECT_NAME }}" | awk "{print \$3}")
