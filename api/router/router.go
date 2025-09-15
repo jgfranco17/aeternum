@@ -67,12 +67,15 @@ func logRequest() gin.HandlerFunc {
 // Configure the router adding routes and middlewares
 func getRouter(dbClient db.DatabaseClient, withSystemInfo bool) (*gin.Engine, error) {
 	router := gin.Default()
+
 	router.Use(addLoggerFields())
 	router.Use(logRequest())
 	router.Use(GetCors())
 	router.Use(system.PrometheusMiddleware())
+
 	system.SetSystemRoutes(router, withSystemInfo)
-	err := v0.SetRoutes(router, dbClient)
+	api := router.Group("/api")
+	err := v0.SetV0Routes(api, dbClient)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to set v0 routes: %w", err)
 	}
