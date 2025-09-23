@@ -5,11 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jgfranco17/aeternum/api/logging"
 	"github.com/jgfranco17/aeternum/execution"
 	exec "github.com/jgfranco17/aeternum/execution"
+	"github.com/sirupsen/logrus"
 	supabase "github.com/supabase-community/supabase-go"
 )
 
@@ -61,8 +63,8 @@ func (s *SupabaseClient) StoreTestResult(ctx context.Context, userID string, res
 		CreatedAt: time.Now(),
 		Metadata: map[string]interface{}{
 			"endpoint_count": len(result.Results),
-			"passed_count":   countPassedTests(result.Results),
-			"failed_count":   countFailedTests(result.Results),
+			"passed_count":   countTestsByStatus(result.Results, "PASS"),
+			"failed_count":   countTestsByStatus(result.Results, "FAIL"),
 		},
 	}
 
@@ -73,7 +75,10 @@ func (s *SupabaseClient) StoreTestResult(ctx context.Context, userID string, res
 		return fmt.Errorf("failed to store test result: %w", err)
 	}
 
-	log.Infof("Successfully stored test result with ID: %s (count: %d)", result.RequestID, count)
+	log.WithFields(logrus.Fields{
+		"id":    result.RequestID,
+		"count": count,
+	}).Infof("Successfully stored test result with ID")
 	return nil
 }
 
@@ -129,25 +134,18 @@ func (s *SupabaseClient) GetUserTestResults(ctx context.Context, userID string, 
 		return nil, fmt.Errorf("failed to unmarshal user test results: %w", err)
 	}
 
-	log.Infof("Successfully retrieved %d test results for user: %s", len(results), userID)
+	log.WithFields(logrus.Fields{
+		"user":  userID,
+		"count": len(results),
+	}).Infof("Successfully retrieved test result for user")
 	return results, nil
 }
 
 // Helper functions
-func countPassedTests(results []exec.CheckResult) int {
+func countTestsByStatus(results []exec.CheckResult, expectedStatus string) int {
 	count := 0
 	for _, result := range results {
-		if result.StatusCode == "PASS" {
-			count++
-		}
-	}
-	return count
-}
-
-func countFailedTests(results []exec.CheckResult) int {
-	count := 0
-	for _, result := range results {
-		if result.StatusCode == "FAIL" {
+		if result.StatusCode == strings.ToUpper(expectedStatus) {
 			count++
 		}
 	}

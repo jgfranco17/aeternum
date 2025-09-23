@@ -67,8 +67,12 @@ func Run(ctx context.Context, testRequest TargetDefinition) (*OutputResponse, er
 		timeout = 5
 	}
 	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
+
+	// Use mutex to protect shared slices
+	var mu sync.Mutex
 	var requestErrors []error
 	failedTests := []string{}
+
 	for i, endpoint := range testRequest.Endpoints {
 		wg.Add(1)
 		go func(i int, e Endpoint) {
@@ -85,7 +89,9 @@ func Run(ctx context.Context, testRequest TargetDefinition) (*OutputResponse, er
 			}
 			resp, err := client.Do(req)
 			if err != nil {
+				mu.Lock()
 				requestErrors = append(requestErrors, err)
+				mu.Unlock()
 				return
 			}
 			actualStatus := resp.StatusCode
@@ -94,7 +100,9 @@ func Run(ctx context.Context, testRequest TargetDefinition) (*OutputResponse, er
 			if actualStatus == e.ExpectedStatus {
 				status = "PASS"
 			} else {
+				mu.Lock()
 				failedTests = append(failedTests, e.Path)
+				mu.Unlock()
 			}
 
 			results[i] = CheckResult{

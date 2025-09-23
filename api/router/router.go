@@ -10,6 +10,7 @@ import (
 	"github.com/jgfranco17/aeternum/api/router/headers"
 	system "github.com/jgfranco17/aeternum/api/router/system"
 	v0 "github.com/jgfranco17/aeternum/api/router/v0"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -58,9 +59,17 @@ func logRequest() gin.HandlerFunc {
 		log := logging.FromContext(c)
 
 		origin := c.Request.Header.Get("Origin")
-		log.Infof("Request Started: [%s] %s from %s", c.Request.Method, c.Request.URL, origin)
+		log.WithFields(logrus.Fields{
+			"origin": origin,
+			"method": c.Request.Method,
+			"url":    c.Request.URL,
+		}).Info("Request started")
 		c.Next()
-		log.Infof("Request Completed: [%s] %s", c.Request.Method, c.Request.URL)
+		log.WithFields(logrus.Fields{
+			"method": c.Request.Method,
+			"url":    c.Request.URL,
+			"status": c.Writer.Status(),
+		}).Info("Request completed", c.Request.Method, c.Request.URL)
 	}
 }
 

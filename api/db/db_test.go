@@ -54,7 +54,7 @@ func TestCountResults_PassedTests(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := countPassedTests(tt.results)
+			result := countTestsByStatus(tt.results, "PASS")
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -102,7 +102,7 @@ func TestCountResults_FailedTests(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := countFailedTests(tt.results)
+			result := countTestsByStatus(tt.results, "FAIL")
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -357,7 +357,7 @@ func BenchmarkCountPassedTests(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		countPassedTests(results)
+		countTestsByStatus(results, "PASS")
 	}
 }
 
@@ -372,6 +372,6 @@ func BenchmarkCountFailedTests(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		countFailedTests(results)
+		countTestsByStatus(results, "FAIL")
 	}
 }
