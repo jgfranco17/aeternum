@@ -20,7 +20,7 @@ func runTests(dbClient db.DatabaseClient) func(c *gin.Context) error {
 		log := logging.FromContext(c)
 		userClaims, exists := auth.GetUserClaims(c)
 		if !exists {
-			return fmt.Errorf("user claims not found in context")
+			return httperror.New(c, http.StatusUnauthorized, "user claims not found in context")
 		}
 
 		var req execution.TargetDefinition
@@ -56,7 +56,7 @@ func getTestResultsById(dbClient db.DatabaseClient) func(c *gin.Context) error {
 		// Get user claims from context
 		userClaims, exists := auth.GetUserClaims(c)
 		if !exists {
-			return fmt.Errorf("user claims not found in context")
+			return httperror.New(c, http.StatusUnauthorized, "user claims not found in context")
 		}
 
 		log := logging.FromContext(c)
@@ -70,10 +70,7 @@ func getTestResultsById(dbClient db.DatabaseClient) func(c *gin.Context) error {
 			return fmt.Errorf("Failed to fetch test result: %w", err)
 		}
 		if result == nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": fmt.Sprintf("No result found for ID %s", resultID),
-			})
-			return fmt.Errorf("No result found for ID %s", resultID)
+			return httperror.New(c, http.StatusNotFound, "No result found for ID %s", resultID)
 		}
 		log.WithFields(logrus.Fields{
 			"id": resultID,
@@ -89,7 +86,7 @@ func getUserTestResults(dbClient db.DatabaseClient) func(c *gin.Context) error {
 		// Get user claims from context
 		userClaims, exists := auth.GetUserClaims(c)
 		if !exists {
-			return httperror.New(c, http.StatusBadRequest, "user claims not found in request context")
+			return httperror.New(c, http.StatusUnauthorized, "user claims not found in request context")
 		}
 
 		// Get limit from query parameter, default to 10
