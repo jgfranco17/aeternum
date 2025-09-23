@@ -31,7 +31,7 @@ func TestExecuteTests_Success(t *testing.T) {
 				ExpectedStatus: http.StatusOK,
 			},
 		},
-		MaxTimeoutSeconds: nil,
+		MaxTimeout: 0,
 	}
 	results, err := Run(context.Background(), request)
 	assert.NoError(t, err)
@@ -59,7 +59,7 @@ func TestExecuteTestsFail_StatusCodeDoNotMatch(t *testing.T) {
 				ExpectedStatus: http.StatusOK,
 			},
 		},
-		MaxTimeoutSeconds: nil,
+		MaxTimeout: 0,
 	}
 	results, err := Run(context.Background(), request)
 	assert.NoError(t, err)
@@ -77,7 +77,7 @@ func TestExecuteTestsFail_UnreachedRequest(t *testing.T) {
 				ExpectedStatus: http.StatusOK,
 			},
 		},
-		MaxTimeoutSeconds: nil,
+		MaxTimeout: 0,
 	}
 	_, err := Run(context.Background(), request)
 	assert.Errorf(t, err, "Failed to make 1 requests")

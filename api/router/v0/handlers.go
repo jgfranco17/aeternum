@@ -41,17 +41,11 @@ func runTests(dbClient db.DatabaseClient) func(c *gin.Context) error {
 
 		c.JSON(http.StatusOK, response)
 
-		// Handle timeout logging safely
-		timeoutStr := "5s" // default
-		if req.MaxTimeoutSeconds != nil {
-			timeoutStr = fmt.Sprintf("%ds", *req.MaxTimeoutSeconds)
-		}
-
 		log.WithFields(logrus.Fields{
 			"id":        userClaims.UserID,
 			"target":    req.BaseURL,
 			"endpoints": len(req.Endpoints),
-			"timeout":   timeoutStr,
+			"timeout":   req.MaxTimeout,
 		}).Info("Test execution completed")
 		return nil
 	}

@@ -31,9 +31,9 @@ type Endpoint struct {
 
 // TargetDefinition represents the API health check request payload.
 type TargetDefinition struct {
-	BaseURL           string     `json:"base_url" binding:"required"`
-	Endpoints         []Endpoint `json:"endpoints" binding:"required"`
-	MaxTimeoutSeconds *int       `json:"max_timeout_seconds,omitempty"`
+	BaseURL    string        `json:"base_url" binding:"required"`
+	Endpoints  []Endpoint    `json:"endpoints" binding:"required"`
+	MaxTimeout time.Duration `json:"max_timeout,omitempty"`
 }
 
 // CheckResult represents the result of an individual API test.
@@ -60,13 +60,7 @@ func Run(ctx context.Context, testRequest TargetDefinition) (*OutputResponse, er
 	results := make([]CheckResult, len(testRequest.Endpoints))
 
 	// Set timeout for API requests
-	var timeout int
-	if testRequest.MaxTimeoutSeconds != nil {
-		timeout = *testRequest.MaxTimeoutSeconds
-	} else {
-		timeout = 5
-	}
-	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
+	client := &http.Client{Timeout: testRequest.MaxTimeout}
 
 	// Use mutex to protect shared slices
 	var mu sync.Mutex
