@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/jgfranco17/aeternum/api/auth"
 	"github.com/jgfranco17/aeternum/api/db"
 	"github.com/jgfranco17/aeternum/api/httperror"
@@ -33,11 +35,24 @@ func runTests(dbClient db.DatabaseClient) func(c *gin.Context) error {
 		}
 		err = dbClient.StoreTestResult(c, userClaims.UserID, response)
 		if err != nil {
-			return httperror.New(c, http.StatusServiceUnavailable, "failed to store data in database: %w", err)
+			// Log the error but don't fail the request
+			log.Errorf("Failed to store test result: %v", err)
 		}
 
 		c.JSON(http.StatusOK, response)
-		log.Infof("Test execution completed successfully for request ID %s", response.RequestID)
+
+		// Handle timeout logging safely
+		timeoutStr := "5s" // default
+		if req.MaxTimeoutSeconds != nil {
+			timeoutStr = fmt.Sprintf("%ds", *req.MaxTimeoutSeconds)
+		}
+
+		log.WithFields(logrus.Fields{
+			"id":        userClaims.UserID,
+			"target":    req.BaseURL,
+			"endpoints": len(req.Endpoints),
+			"timeout":   timeoutStr,
+		}).Info("Test execution completed")
 		return nil
 	}
 }
@@ -51,22 +66,24 @@ func getTestResultsById(dbClient db.DatabaseClient) func(c *gin.Context) error {
 		}
 
 		log := logging.FromContext(c)
-		resultId := c.Query("id")
-		if resultId == "" {
+		resultID := c.Query("id")
+		if resultID == "" {
 			return httperror.New(c, http.StatusBadRequest, "Empty ID parameter")
 		}
 
-		result, err := dbClient.GetTestResult(c, userClaims.UserID, resultId)
+		result, err := dbClient.GetTestResult(c, userClaims.UserID, resultID)
 		if err != nil {
 			return fmt.Errorf("Failed to fetch test result: %w", err)
 		}
 		if result == nil {
 			c.JSON(http.StatusNotFound, gin.H{
-				"message": fmt.Sprintf("No result found for ID %s", resultId),
+				"message": fmt.Sprintf("No result found for ID %s", resultID),
 			})
-			return fmt.Errorf("No result found for ID %s", resultId)
+			return fmt.Errorf("No result found for ID %s", resultID)
 		}
-		log.Infof("Found results for ID %s", resultId)
+		log.WithFields(logrus.Fields{
+			"id": resultID,
+		}).Infof("Found requested results for ID")
 		c.JSON(http.StatusOK, result)
 		return nil
 	}
