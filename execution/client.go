@@ -67,45 +67,46 @@ func Run(ctx context.Context, testRequest TargetDefinition) (*OutputResponse, er
 	var requestErrors []error
 	failedTests := []string{}
 
+	worker := func(i int, e Endpoint) {
+		defer wg.Done()
+		fullURL, err := url.JoinPath(testRequest.BaseURL, e.Path)
+		if err != nil {
+			requestErrors = append(requestErrors, err)
+			return
+		}
+		req, err := http.NewRequestWithContext(ctx, e.Method, fullURL, nil)
+		if err != nil {
+			requestErrors = append(requestErrors, err)
+			return
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			mu.Lock()
+			requestErrors = append(requestErrors, err)
+			mu.Unlock()
+			return
+		}
+		actualStatus := resp.StatusCode
+		resp.Body.Close()
+		status := "FAIL"
+		if actualStatus == e.ExpectedStatus {
+			status = "PASS"
+		} else {
+			mu.Lock()
+			failedTests = append(failedTests, e.Path)
+			mu.Unlock()
+		}
+
+		results[i] = CheckResult{
+			Path:           e.Path,
+			ExpectedStatus: e.ExpectedStatus,
+			ActualStatus:   actualStatus,
+			StatusCode:     status,
+		}
+	}
 	for i, endpoint := range testRequest.Endpoints {
 		wg.Add(1)
-		go func(i int, e Endpoint) {
-			defer wg.Done()
-			fullURL, err := url.JoinPath(testRequest.BaseURL, e.Path)
-			if err != nil {
-				requestErrors = append(requestErrors, err)
-				return
-			}
-			req, err := http.NewRequest(endpoint.Method, fullURL, nil)
-			if err != nil {
-				requestErrors = append(requestErrors, err)
-				return
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				mu.Lock()
-				requestErrors = append(requestErrors, err)
-				mu.Unlock()
-				return
-			}
-			actualStatus := resp.StatusCode
-			resp.Body.Close()
-			status := "FAIL"
-			if actualStatus == e.ExpectedStatus {
-				status = "PASS"
-			} else {
-				mu.Lock()
-				failedTests = append(failedTests, e.Path)
-				mu.Unlock()
-			}
-
-			results[i] = CheckResult{
-				Path:           e.Path,
-				ExpectedStatus: e.ExpectedStatus,
-				ActualStatus:   actualStatus,
-				StatusCode:     status,
-			}
-		}(i, endpoint)
+		go worker(i, endpoint)
 	}
 	wg.Wait()
 
