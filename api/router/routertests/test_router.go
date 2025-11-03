@@ -65,7 +65,8 @@ func (s *TestServer) WithSystemRoutes() *TestServer {
 }
 
 func (s *TestServer) WithV0Routes(dbClient db.DatabaseClient) *TestServer {
-	v0.SetRoutes(s.service.Router, dbClient)
+	mockServer := s.service.Router.Group("/api")
+	v0.SetV0Routes(mockServer, dbClient)
 	return s
 }
 
@@ -73,12 +74,12 @@ func (s *TestServer) RunRequests(t *testing.T, sampleRequests []ExampleHttpReque
 	t.Helper()
 
 	for _, r := range sampleRequests {
-		// Create the request with the provided method, endpoint, and body (if any)
 		var request *http.Request
+		fullEndpoint := "/api" + r.Endpoint
 		if r.Payload != "" {
-			request = httptest.NewRequest(r.Method, r.Endpoint, bytes.NewBuffer([]byte(r.Payload)))
+			request = httptest.NewRequest(r.Method, fullEndpoint, bytes.NewBuffer([]byte(r.Payload)))
 		} else {
-			request = httptest.NewRequest(r.Method, r.Endpoint, nil)
+			request = httptest.NewRequest(r.Method, fullEndpoint, nil)
 		}
 		request.Header.Set("Content-Type", "application/json")
 		if token != "" {

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExecuteTestsSuccess(t *testing.T) {
+func TestExecuteTests_Success(t *testing.T) {
 	mux := http.NewServeMux()
 	for _, endpoint := range []string{"/home", "/healthz"} {
 		mux.HandleFunc(endpoint, func(res http.ResponseWriter, req *http.Request) {
@@ -17,26 +17,28 @@ func TestExecuteTestsSuccess(t *testing.T) {
 		})
 	}
 	mockServer := httptest.NewServer(mux)
-	request := TestExecutionRequest{
+	request := TargetDefinition{
 		BaseURL: mockServer.URL,
 		Endpoints: []Endpoint{
 			{
 				Path:           "/home",
+				Method:         "GET",
 				ExpectedStatus: http.StatusOK,
 			},
 			{
 				Path:           "/healthz",
+				Method:         "GET",
 				ExpectedStatus: http.StatusOK,
 			},
 		},
-		MaxTimeoutSeconds: nil,
+		MaxTimeout: 0,
 	}
-	results, err := ExecuteTests(context.Background(), request)
+	results, err := Run(context.Background(), request)
 	assert.NoError(t, err)
-	assert.Equal(t, "PASS", results.Status)
+	assert.Equal(t, StatusPass, results.Status)
 }
 
-func TestExecuteTestsStatusCodeDoNotMatch(t *testing.T) {
+func TestExecuteTestsFail_StatusCodeDoNotMatch(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/index", func(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusOK)
@@ -45,7 +47,7 @@ func TestExecuteTestsStatusCodeDoNotMatch(t *testing.T) {
 		res.WriteHeader(http.StatusBadRequest)
 	})
 	mockServer := httptest.NewServer(mux)
-	request := TestExecutionRequest{
+	request := TargetDefinition{
 		BaseURL: mockServer.URL,
 		Endpoints: []Endpoint{
 			{
@@ -57,17 +59,17 @@ func TestExecuteTestsStatusCodeDoNotMatch(t *testing.T) {
 				ExpectedStatus: http.StatusOK,
 			},
 		},
-		MaxTimeoutSeconds: nil,
+		MaxTimeout: 0,
 	}
-	results, err := ExecuteTests(context.Background(), request)
+	results, err := Run(context.Background(), request)
 	assert.NoError(t, err)
-	assert.Equal(t, "FAIL", results.Status)
+	assert.Equal(t, StatusFail, results.Status)
 }
 
-func TestExecuteTestsFailedRequest(t *testing.T) {
+func TestExecuteTestsFail_UnreachedRequest(t *testing.T) {
 	mux := http.NewServeMux()
 	mockServer := httptest.NewUnstartedServer(mux)
-	request := TestExecutionRequest{
+	request := TargetDefinition{
 		BaseURL: mockServer.URL,
 		Endpoints: []Endpoint{
 			{
@@ -75,8 +77,8 @@ func TestExecuteTestsFailedRequest(t *testing.T) {
 				ExpectedStatus: http.StatusOK,
 			},
 		},
-		MaxTimeoutSeconds: nil,
+		MaxTimeout: 0,
 	}
-	_, err := ExecuteTests(context.Background(), request)
+	_, err := Run(context.Background(), request)
 	assert.Errorf(t, err, "Failed to make 1 requests")
 }

@@ -2,8 +2,10 @@ package execution
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -23,14 +25,15 @@ const (
 
 type Endpoint struct {
 	Path           string `json:"path" binding:"required"`
+	Method         string `json:"method" binding:"required,oneof=GET POST PUT DELETE PATCH"`
 	ExpectedStatus int    `json:"expected_status" binding:"required"`
 }
 
-// TestExecutionRequest represents the API health check request payload.
-type TestExecutionRequest struct {
-	BaseURL           string     `json:"base_url" binding:"required,url"`
-	Endpoints         []Endpoint `json:"endpoints" binding:"required,dive"`
-	MaxTimeoutSeconds *int       `json:"max_timeout_seconds,omitempty"`
+// TargetDefinition represents the API health check request payload.
+type TargetDefinition struct {
+	BaseURL    string        `json:"base_url" binding:"required"`
+	Endpoints  []Endpoint    `json:"endpoints" binding:"required"`
+	MaxTimeout time.Duration `json:"max_timeout,omitempty"`
 }
 
 // CheckResult represents the result of an individual API test.
@@ -41,15 +44,15 @@ type CheckResult struct {
 	StatusCode     string `json:"status"`
 }
 
-// CheckResponse represents the full response of an API check.
-type CheckResponse struct {
+// OutputResponse represents the full response of an API check.
+type OutputResponse struct {
 	RequestID string        `json:"request_id"`
 	BaseURL   string        `json:"base_url"`
 	Status    Status        `json:"status"`
 	Results   []CheckResult `json:"results"`
 }
 
-func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*CheckResponse, error) {
+func Run(ctx context.Context, testRequest TargetDefinition) (*OutputResponse, error) {
 	log := logging.FromContext(ctx)
 	requestID := fmt.Sprintf("aeternum-v0-%s", uuid.New().String())
 	log.Debugf("Running test requests [ID %s]: %s", requestID, testRequest.BaseURL)
@@ -57,49 +60,60 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 	results := make([]CheckResult, len(testRequest.Endpoints))
 
 	// Set timeout for API requests
-	var timeout int
-	if testRequest.MaxTimeoutSeconds != nil {
-		timeout = *testRequest.MaxTimeoutSeconds
-	} else {
-		timeout = 5
-	}
-	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
-	requestErrors := []string{}
+	client := &http.Client{Timeout: testRequest.MaxTimeout}
+
+	// Use mutex to protect shared slices
+	var mu sync.Mutex
+	var requestErrors []error
 	failedTests := []string{}
+
+	worker := func(i int, e Endpoint) {
+		defer wg.Done()
+		fullURL, err := url.JoinPath(testRequest.BaseURL, e.Path)
+		if err != nil {
+			requestErrors = append(requestErrors, err)
+			return
+		}
+		req, err := http.NewRequestWithContext(ctx, e.Method, fullURL, nil)
+		if err != nil {
+			requestErrors = append(requestErrors, err)
+			return
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			mu.Lock()
+			requestErrors = append(requestErrors, err)
+			mu.Unlock()
+			return
+		}
+		actualStatus := resp.StatusCode
+		resp.Body.Close()
+		status := "FAIL"
+		if actualStatus == e.ExpectedStatus {
+			status = "PASS"
+		} else {
+			mu.Lock()
+			failedTests = append(failedTests, e.Path)
+			mu.Unlock()
+		}
+
+		results[i] = CheckResult{
+			Path:           e.Path,
+			ExpectedStatus: e.ExpectedStatus,
+			ActualStatus:   actualStatus,
+			StatusCode:     status,
+		}
+	}
 	for i, endpoint := range testRequest.Endpoints {
 		wg.Add(1)
-		go func(i int, e Endpoint) {
-			defer wg.Done()
-			fullURL := testRequest.BaseURL + e.Path
-			resp, err := client.Get(fullURL)
-			actualStatus := 0
-
-			if err != nil {
-				requestErrors = append(requestErrors, err.Error())
-				return
-			}
-			actualStatus = resp.StatusCode
-			resp.Body.Close()
-			status := "FAIL"
-			if actualStatus == e.ExpectedStatus {
-				status = "PASS"
-			} else {
-				failedTests = append(failedTests, e.Path)
-			}
-
-			results[i] = CheckResult{
-				Path:           e.Path,
-				ExpectedStatus: e.ExpectedStatus,
-				ActualStatus:   actualStatus,
-				StatusCode:     status,
-			}
-		}(i, endpoint)
+		go worker(i, endpoint)
 	}
 	wg.Wait()
 
 	// Handle error cases
 	if len(requestErrors) > 0 {
-		return nil, fmt.Errorf("Failed to make %d requests: %v", len(requestErrors), requestErrors)
+		consolidatedError := errors.Join(requestErrors...)
+		return nil, fmt.Errorf("Failed to make %d requests: %v", len(requestErrors), consolidatedError)
 	}
 	var overallStatus Status
 	if len(failedTests) > 0 {
@@ -107,7 +121,7 @@ func ExecuteTests(ctx context.Context, testRequest TestExecutionRequest) (*Check
 	} else {
 		overallStatus = StatusPass
 	}
-	return &CheckResponse{
+	return &OutputResponse{
 		RequestID: requestID,
 		BaseURL:   testRequest.BaseURL,
 		Results:   results,

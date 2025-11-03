@@ -8,7 +8,7 @@ import (
 )
 
 // Adds v0 routes to the router.
-func SetRoutes(route *gin.Engine, dbClient db.DatabaseClient) error {
+func SetV0Routes(route *gin.RouterGroup, dbClient db.DatabaseClient) error {
 	v0 := route.Group("/v0")
 	// Apply authentication middleware to all v0 routes
 	v0.Use(auth.AuthMiddleware())

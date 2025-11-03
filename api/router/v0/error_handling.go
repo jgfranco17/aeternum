@@ -45,11 +45,11 @@ func getErrorResponse(ctx context.Context, err error) errorResponse {
 
 	errorMessage := err.Error()
 
-	var inputErr httperror.HttpError
-	if errors.As(err, &inputErr) {
-		body := getErrorMetadataFromContext(inputErr.Context())
+	var httpErr httperror.HttpError
+	if errors.As(err, &httpErr) {
+		body := getErrorMetadataFromContext(httpErr.Context())
 		body.Message = errorMessage
-		return errorResponse{Status: 400, Body: body}
+		return errorResponse{Status: httpErr.Status(), Body: body}
 	}
 	body := getErrorMetadataFromContext(ctx)
 	body.Message = "Internal Server Error"
